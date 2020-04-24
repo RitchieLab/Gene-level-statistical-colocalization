@@ -26,5 +26,5 @@ Of these, we consider as “lead SNPs” all SNPs in the GWAS dataset with a p-v
 * We subsequently estimate the coloc probability of H3 (alternative hypothesis that eQTL and GWAS associations correspond to independent signals) and H4 (alternative hypothesis that eQTL and GWAS associations correspond to the same signal) for the lead SNP-eGene pair. 
 * In case a lead SNP corresponds to more than one eGene for a given tissue, we perform colocalization on both lead SNP-eGene pairs. 
 * We assume a prior probability that a SNP is associated with (1) lipid phenotype (default=1E-04), (2) gene expression (default=0.001), and (3) both GWAS and gene expression (default=1E-06) for all coloc analyses. 
-* We select the lead SNP with the lowest p[H3] and lowest GWAS p-value for a given eGene and use this as the corresponding p[H3] for the gene. 
-* We can subsequently filter out all genes whose p[H3]>0.5 and that had no SNPs with p[H4]>0.5 for a given tissue. 
+* We select the lead SNP with the lowest p[H3] and and highest p[H4] for a given eGene and use this as the corresponding p[H3] for the gene. 
+* We can subsequently filter out all genes whose p[H3]>0.5 and p[H4]<0.5 for a given tissue. 
