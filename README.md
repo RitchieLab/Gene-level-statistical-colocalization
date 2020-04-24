@@ -18,6 +18,27 @@ Of these, we consider as “lead SNPs” all SNPs in the GWAS dataset with a p-v
 * Here, we identify the subset of genes (referred to as “eGenes”) whose boundaries are within the chosen window of the lead SNP. 
 * For each selected eGene, we identify all the associated SNPs in the eQTL dataset, or the set of “eQTL-testable SNPs”. 
 * Again, we perform conditional analyses using GCTA-COJO to obtain “conditionally independent” SNPs associated with gene expression for a given lead SNP-eGene pair in the selected tissue. 
+
+```
+#sample eQTL file
+
+            gene_id          variant_id tss_distance ma_samples ma_count
+1 ENSG00000227232.4 1_13417_C_CGAGA_b37       -16136         50       50
+2 ENSG00000227232.4     1_17559_G_C_b37       -11994          7        7
+3 ENSG00000227232.4     1_54421_A_G_b37        24868         27       27
+4 ENSG00000227232.4     1_54490_G_A_b37        24937        119      127
+5 ENSG00000227232.4     1_61920_G_A_b37        32367         16       17
+6 ENSG00000227232.4     1_64649_A_C_b37        35096         14       14
+         maf pval_nominal      slope  slope_se
+1 0.07225430   0.00908288  0.3556660 0.1354910
+2 0.00923483   0.15611600  0.4947870 0.3480440
+3 0.03678470   0.63643300 -0.0881399 0.1862840
+4 0.17887300   0.43983700  0.0705390 0.0912018
+5 0.02348070   0.52871600 -0.1293250 0.2050630
+6 0.01851850   0.62121000 -0.1171230 0.2367930
+
+```
+
 #### GCTA steps
 * We use the --cojo-slct option to perform model selection and get a list of independently associated testable SNPs (p-value < chosen threshold). 
 * If there are at least two independent testable SNPs at a distance > 100KB (but < 1 MB) from the lead SNP, we run GCTA-COJO again to perform association analysis on all testable SNPs conditioned on the independently associated SNPs procured from the first GCTA run. 
