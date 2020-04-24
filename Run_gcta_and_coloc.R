@@ -9,6 +9,7 @@ rm(list=ls())
 
 suppressMessages(library(coloc))
 suppressMessages(library(simsalapar))
+suppressMessages(library(optparse))
 
 #############################################
 ## 2. Define parameters and prepare datasets
