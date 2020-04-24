@@ -48,7 +48,7 @@ and save downloaded data under the cloned folder
 Rscript run_gcta_and_coloc.R \
   --chromosome 1 \
   --window_size 10000 \
-  --gwas_p_threshold 1E-06 \
+  --gwas_p_threshold 1e-06 \
   --eqtl_file "LD_Contamination_example_data/Adipose_Subcutaneous.allpairs.chr1.txt" \
   --gwas_file "LD_Contamination_example_data/jointGwasMc_LDL_chr1_formatted.txt" \
   --genes_file "LD_Contamination_example_data/Genes_list.txt" \
@@ -56,13 +56,13 @@ Rscript run_gcta_and_coloc.R \
   --trait "LDL" \
   --tissue "Adipose_Subcutaneous" \
   --gwas_data_name "GLGC" \
-  --cojo_p 1E-06 \
+  --cojo_p 1e-06 \
   --gene_of_interest "ENSG00000134243" \
   --output_folder "output" \
   --core 10 \
   --ld_folder "LD_Contamination_example_data" \
   --eqtl_sample_size "LD_Contamination_example_data/GTEx_v7_tissue_specific_sample_sizes.txt" \
-  --coloc_p1 1E-04 \
+  --coloc_p1 1e-04 \
   --coloc_p2 0.001 \
   --coloc_p12 1E-06 
 ```
