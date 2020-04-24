@@ -14,6 +14,16 @@ Of these, we consider as “lead SNPs” all SNPs in the GWAS dataset with a p-v
 #### GWAS dataset 
 * We first identify SNPs around a chosen window of each lead SNP from the GWAS dataset, which we will refer to as our “GWAS-testable SNPs”. 
 * For each lead SNP, we perform conditional analyses using GCTA-COJO on the corresponding GWAS-testable SNPs and obtain “conditionally independent” SNPs associated with the lipid phenotype. 
+
+```
+#sample GWAS file
+SNP	BP	CHR	A1	A2	BETA	SE	P	FREQ	N
+rs1172982	100230111	1	t	c	0.0043	0.0055	0.4689	0.3219	89888
+rs1172981	100230197	1	t	c	0.0057	0.0103	0.7688	0.06069	89888
+rs11166327	100230867	1	c	t	0.0053	0.0106	0.7725	0.06069	89888
+rs4908018	100234367	1	a	c	0.0058	0.0103	0.7887	0.05937	89841
+rs2392072	100234743	1	a	g	0.0039	0.0058	0.4052	0.3153	86877
+```
 #### eQTL dataset
 * Here, we identify the subset of genes (referred to as “eGenes”) whose boundaries are within the chosen window of the lead SNP. 
 * For each selected eGene, we identify all the associated SNPs in the eQTL dataset, or the set of “eQTL-testable SNPs”. 
@@ -21,22 +31,18 @@ Of these, we consider as “lead SNPs” all SNPs in the GWAS dataset with a p-v
 
 ```
 #sample eQTL file
-
             gene_id          variant_id tss_distance ma_samples ma_count
 1 ENSG00000227232.4 1_13417_C_CGAGA_b37       -16136         50       50
 2 ENSG00000227232.4     1_17559_G_C_b37       -11994          7        7
 3 ENSG00000227232.4     1_54421_A_G_b37        24868         27       27
 4 ENSG00000227232.4     1_54490_G_A_b37        24937        119      127
 5 ENSG00000227232.4     1_61920_G_A_b37        32367         16       17
-6 ENSG00000227232.4     1_64649_A_C_b37        35096         14       14
          maf pval_nominal      slope  slope_se
 1 0.07225430   0.00908288  0.3556660 0.1354910
 2 0.00923483   0.15611600  0.4947870 0.3480440
 3 0.03678470   0.63643300 -0.0881399 0.1862840
 4 0.17887300   0.43983700  0.0705390 0.0912018
 5 0.02348070   0.52871600 -0.1293250 0.2050630
-6 0.01851850   0.62121000 -0.1171230 0.2367930
-
 ```
 
 #### GCTA steps
