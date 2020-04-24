@@ -27,13 +27,14 @@ opt_list <- list(
   make_option("--cojo_p",type="numeric",default=0.001,help="MAF threshold (default = %default)"),
   make_option("--genes_file",type="character",help="File (with path) for tab separated list of chosen genes with column names =  ENSG_gene, gene_start_position, gene_stop_position, chromosome"),
   make_option("--gene_of_interest",type="character",help="ENSG_gene(s) of interest from genes_file (ignore decimal point)"),
-  make_option("--output_folder",type="character",help="Path of the output folder")
-  make_option("--ld_folder",type="character",help="Path of the folder with plink files for LD calculation in gcta (should have chromosome number in the filename in .chromosome.bim/bed/fam format)")
-  make_option("--eqtl_sample_size",type="character",help="Filename (with path) of sample sizes for eQTL datasets across different tissues; has two columns corresponding to tissue name and sample size")
+  make_option("--output_folder",type="character",help="Path of the output folder"),
+  make_option("--ld_folder",type="character",help="Path of the folder with plink files for LD calculation in gcta (should have chromosome number in the filename in .chromosome.bim/bed/fam format)"),
+  make_option("--eqtl_sample_size",type="character",help="Filename (with path) of sample sizes for eQTL datasets across different tissues; has two columns corresponding to tissue name and sample size"),
   make_option("--coloc_p1",type="integer",default=1e-04,help="Prior probability a SNP is associated with GWAS trait (default = %default)"),
   make_option("--coloc_p2",type="integer",default=0.001,help="Prior probability a SNP is associated with gene expression (default = %default)"),
   make_option("--coloc_p12",type="integer",default=1e-06,help="Prior probability a SNP is associated with GWAS trait and gene expression (default = %default)"),
   make_option("--core",type="integer",default=10,help="Number of cores to run parallel tasks (default = %default)"),
+)
 
 opts <- parse_args(OptionParser(option_list=opt_list))
 
