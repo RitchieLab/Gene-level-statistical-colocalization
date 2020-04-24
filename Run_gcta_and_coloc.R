@@ -32,7 +32,8 @@ opt_list <- list(
   make_option("--eqtl_sample_size",type="character",help="Filename (with path) of sample sizes for eQTL datasets across different tissues; has two columns corresponding to tissue name and sample size")
   make_option("--coloc_p1",type="integer",default=1e-04,help="Prior probability a SNP is associated with GWAS trait (default = %default)"),
   make_option("--coloc_p2",type="integer",default=0.001,help="Prior probability a SNP is associated with gene expression (default = %default)"),
-  make_option("--coloc_p12",type="integer",default=1e-06,help="prior probability a SNP is associated with GWAS trait and gene expression (default = %default)"),
+  make_option("--coloc_p12",type="integer",default=1e-06,help="Prior probability a SNP is associated with GWAS trait and gene expression (default = %default)"),
+  make_option("--core",type="integer",default=10,help="Number of cores to run parallel tasks (default = %default)"),
 
 opts <- parse_args(OptionParser(option_list=opt_list))
 
@@ -55,7 +56,8 @@ N.eqtl.file <- opts$eqtl_sample_size
 coloc.p1 <- opts$coloc_p1
 coloc.p2 <- opts$coloc_p2
 coloc.p12 <- opts$coloc_p12
-
+core <- opts$core
+  
 #2.2 Read and prepare data files
 gwas <- as.data.frame(data.table::fread(gwas.file,header=T,stringsAsFactors=FALSE,sep="\t"))
 gwas <- gwas[which(gwas[,"CHR"]==chr),]
