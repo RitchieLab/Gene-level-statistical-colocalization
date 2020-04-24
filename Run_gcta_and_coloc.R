@@ -224,7 +224,7 @@ for(j in 1:length(lead_snps)){ # Loop starts for lead snps
 
 #4.1 Run GCTA using system commands to get list of independently associated SNPs with GWAS p-value < cojo.p. Results after applying model selection procedure (--cojo-slct) are saved in the .jma.cojo file
 
-     system(paste0("module load gcta/1.26;gcta64 --bfile ",ld.folder,"/",ld.filename,"  --chr ",chr," --maf ",maf," --cojo-file GWAS_",trait,"_",gwas.data.name,"_chr",chr,"_pos_",pos,".txt --cojo-slct --cojo-p ",cojo.p,"  --out ",gwas.data.name,"_",trait,"_chr",chr,"_pos_",pos,"_pval_",cojo.p))
+     system(paste0("module load gcta --bfile ",ld.folder,"/",ld.filename,"  --chr ",chr," --maf ",maf," --cojo-file GWAS_",trait,"_",gwas.data.name,"_chr",chr,"_pos_",pos,".txt --cojo-slct --cojo-p ",cojo.p,"  --out ",gwas.data.name,"_",trait,"_chr",chr,"_pos_",pos,"_pval_",cojo.p))
      gwas.topsnps <- read.table(paste0(gwas.data.name,"_",trait,"_chr",chr,"_pos_",pos,"_pval_",cojo.p,".jma.cojo"),header=T,stringsAsFactors=FALSE)
      x_topsnps = gwas.topsnps[which(gwas.topsnps[,"SNP"]%in%x[,"SNP"]),]
 
@@ -233,7 +233,7 @@ for(j in 1:length(lead_snps)){ # Loop starts for lead snps
      if(nrow(x_topsnps)>=2) {
      x_topsnps <- x_topsnps[which(x_topsnps[,"SNP"]!=snp),]; if(nrow(x_topsnps)>=2) x_topsnps <- x_topsnps[which(abs(x_topsnps[,"bp"]-pos)>100000),]
      write.table(x_topsnps[,"SNP"],file=paste0("GWAS_",trait,"_",gwas.data.name,"_chr",chr,"_pos_",pos,"_topsnpslist.txt"),row.names=F,col.names=T,quote=F,sep="\t")
-     system(paste0("module load gcta/1.26;gcta64 --bfile ",ld.folder,"/",ld.filename," --chr ",chr," --maf ",maf," --cojo-file GWAS_",trait,"_",gwas.data.name,"_chr",chr,"_pos_",pos,".txt --cojo-cond GWAS_",trait,"_",gwas.data.name,"_chr",chr,"_pos_",pos,"_topsnpslist.txt --out GWAS_",trait,"_",gwas.data.name,"_chr_",chr,"_pos_",pos,"_conditionalP"))
+     system(paste0("module load gcta --bfile ",ld.folder,"/",ld.filename," --chr ",chr," --maf ",maf," --cojo-file GWAS_",trait,"_",gwas.data.name,"_chr",chr,"_pos_",pos,".txt --cojo-cond GWAS_",trait,"_",gwas.data.name,"_chr",chr,"_pos_",pos,"_topsnpslist.txt --out GWAS_",trait,"_",gwas.data.name,"_chr_",chr,"_pos_",pos,"_conditionalP"))
      tmp3=tryCatch.W.E(read.table(paste0("GWAS_",trait,"_",gwas.data.name,"_chr_",chr,"_pos_",pos,"_conditionalP.cma.cojo"),header=T))
      warn3 <- inherits(tmp3$warning,"warning")
      error3 <- inherits(tmp3$value,"error")
@@ -265,13 +265,13 @@ for(j in 1:length(lead_snps)){ # Loop starts for lead snps
         x2_gcta[,"SNP"] <- rsids.matched
 
         write.table(x2_gcta,file=paste0("eQTL_",tissue,"_chr",chr,"_pos_",pos,"_",genes_fin[k],".txt"),row.names=F,col.names=T,quote=F,sep="\t")
-        system(paste0("module load gcta/1.26;gcta64 --bfile ",ld.folder,"/",ld.filename," --chr ",chr," --maf ",maf," --cojo-file eQTL_",tissue,"_chr",chr,"_pos_",pos,"_",genes_fin[k],".txt --cojo-top-SNPs 2 --out ",tissue,"_chr_",chr,"_pos_",pos,"_",genes_fin[k]))
+        system(paste0("module load gcta --bfile ",ld.folder,"/",ld.filename," --chr ",chr," --maf ",maf," --cojo-file eQTL_",tissue,"_chr",chr,"_pos_",pos,"_",genes_fin[k],".txt --cojo-top-SNPs 2 --out ",tissue,"_chr_",chr,"_pos_",pos,"_",genes_fin[k]))
         eqtl.topsnps <- read.table(paste0(tissue,"_chr_",chr,"_pos_",pos,"_",genes_fin[k],".jma.cojo"),header=T)
         if(nrow(eqtl.topsnps)>=2) {
           eqtl.topsnps = eqtl.topsnps[which(eqtl.topsnps[,"SNP"]!=rsid),];
           eqtl.topsnps = eqtl.topsnps[which(abs(eqtl.topsnps[,"bp"]-pos)>100000),]
           write.table(eqtl.topsnps[,2],file=paste0("eQTL_",tissue,"_chr",chr,"_pos_",pos,"_",genes_fin[k],"_topsnplist.txt"),row.names=F,col.names=T,quote=F,sep="\t")
-          system(paste0("module load gcta/1.26;gcta64 --bfile ",ld.folder,"/",ld.filename," --chr ",chr," --maf ",maf," --cojo-file eQTL_",tissue,"_chr",chr,"_pos_",pos,"_",genes_fin[k],".txt --cojo-cond eQTL_",tissue,"_chr",chr,"_pos_",pos,"_",genes_fin[k],"_topsnplist.txt --out ",tissue,"_chr_",chr,"_pos_",pos,"_",genes_fin[k],"_conditionalP"))
+          system(paste0("module load gcta --bfile ",ld.folder,"/",ld.filename," --chr ",chr," --maf ",maf," --cojo-file eQTL_",tissue,"_chr",chr,"_pos_",pos,"_",genes_fin[k],".txt --cojo-cond eQTL_",tissue,"_chr",chr,"_pos_",pos,"_",genes_fin[k],"_topsnplist.txt --out ",tissue,"_chr_",chr,"_pos_",pos,"_",genes_fin[k],"_conditionalP"))
            tmp1 <-  tryCatch.W.E(read.table(paste0(tissue,"_chr_",chr,"_pos_",pos,"_",genes_fin[k],"_conditionalP.cma.cojo"),header=T))
            warn1 <- inherits(tmp1$warning,"warning")
            error1 <- inherits(tmp1$value,"error")
