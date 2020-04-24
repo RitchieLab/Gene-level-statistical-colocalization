@@ -4,7 +4,7 @@ To run simulation using run_twas_simulation.R, the following libraries are requi
 * [coloc](https://cran.r-project.org/web/packages/coloc/index.html)
 * [simsalapar](https://cran.r-project.org/web/packages/simsalapar/index.html)
 * [optparse](https://www.rdocumentation.org/packages/optparse/versions/1.6.6)
-* Installed [GCTA](https://cnsgenomics.com/software/gcta/#Overview)
+* Installed [GCTA](https://cnsgenomics.com/software/gcta/#Overview) v1.64 or higher
 
 For running *colocalization*, we first identify a list of genes in a chromosome. 
 Next, we identify all the SNPs in the GWAS dataset that are within a specified window from the TSS and TES of the selected genes. 
@@ -47,8 +47,8 @@ and save downloaded data under the cloned folder
 ```
 Rscript run_gcta_and_coloc.R \
   --chromosome 1 \
-  --window_size 10000 \
-  --gwas_p_threshold 1e-06 \
+  --window_size 1000000 \
+  --gwas_p_threshold 1e-08 \
   --eqtl_file "LD_Contamination_example_data/Adipose_Subcutaneous.allpairs.chr1.txt" \
   --gwas_file "LD_Contamination_example_data/jointGwasMc_LDL_chr1_formatted.txt" \
   --genes_file "LD_Contamination_example_data/Genes_list.txt" \
@@ -56,7 +56,7 @@ Rscript run_gcta_and_coloc.R \
   --trait "LDL" \
   --tissue "Adipose_Subcutaneous" \
   --gwas_data_name "GLGC" \
-  --cojo_p 1e-06 \
+  --cojo_p 1e-08 \
   --gene_of_interest "ENSG00000134243" \
   --output_folder "output" \
   --core 10 \
