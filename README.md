@@ -33,13 +33,18 @@ Of these, we consider as “lead SNPs” all SNPs in the GWAS dataset with a p-v
 ## Setup and Example
 
 1. Clone the repository.
-> git clone https://github.com/RitchieLab/Remove-LD-contaminated-genes
+``` 
+git clone https://github.com/RitchieLab/Remove-LD-contaminated-genes
+```
 2. Go to the cloned folder (set as working directory)
-> cd Remove-LD-contaminated-genes
+``` 
+cd Remove-LD-contaminated-genes 
+```
 3. Download and unzip example data https://ritchielab.org/files/Lipid_Pleiotropy_project/LD_Contamination_example_data.tar.gz
 and save downloaded data under the cloned folder
 4. Run 'run_gcta_and_coloc.R'.
-> Rscript run_gcta_and_coloc.R \
+```
+Rscript run_gcta_and_coloc.R \
   --chromosome 1 \
   --window_size 10000 \
   --gwas_p_threshold 1E-06 \
@@ -59,6 +64,7 @@ and save downloaded data under the cloned folder
   --coloc_p1 1E-04 \
   --coloc_p2 0.001 \
   --coloc_p12 1E-06 
+```
 
 Here is an explanation of the listed parameters
 
