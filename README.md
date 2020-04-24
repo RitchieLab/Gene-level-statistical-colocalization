@@ -28,3 +28,56 @@ Of these, we consider as “lead SNPs” all SNPs in the GWAS dataset with a p-v
 * We assume a prior probability that a SNP is associated with (1) lipid phenotype (default=1E-04), (2) gene expression (default=0.001), and (3) both GWAS and gene expression (default=1E-06) for all coloc analyses. 
 * We select the lead SNP with the lowest p[H3] and and highest p[H4] for a given eGene and use this as the corresponding p[H3] for the gene. 
 * We can subsequently filter out all genes whose p[H3]>0.5 and p[H4]<0.5 for a given tissue. 
+
+
+## Setup and Example
+
+1. Clone the repository.
+> git clone https://github.com/RitchieLab/Remove-LD-contaminated-genes
+2. Go to the cloned folder (set as working directory)
+> cd Remove-LD-contaminated-genes
+3. Download and unzip example data https://ritchielab.org/files/Lipid_Pleiotropy_project/LD_Contamination_example_data.tar.gz
+and save downloaded data under the cloned folder
+4. Run 'run_gcta_and_coloc.R'.
+> Rscript run_gcta_and_coloc.R \
+  --chromosome 1 \
+  --window_size 10000 \
+  --gwas_p_threshold 1E-06 \
+  --eqtl_file "LD_Contamination_example_data/Adipose_Subcutaneous.allpairs.chr1.txt" \
+  --gwas_file "LD_Contamination_example_data/jointGwasMc_LDL_chr1_formatted.txt" \
+  --genes_file "LD_Contamination_example_data/Genes_list.txt" \
+  --maf 0.01 \
+  --trait "LDL" \
+  --tissue "Adipose_Subcutaneous" \
+  --gwas_data_name "GLGC" \
+  --cojo_p 1E-06 \
+  --gene_of_interest "ENSG00000134243" \
+  --output_folder "output" \
+  --core 10 \
+  --ld_folder "LD_Contamination_example_data" \
+  --eqtl_sample_size "LD_Contamination_example_data/GTEx_v7_tissue_specific_sample_sizes.txt" \
+  --coloc_p1 1E-04 \
+  --coloc_p2 0.001 \
+  --coloc_p12 1E-06 
+
+Here is an explanation of the listed parameters
+
+  * --*chromosome* The chromosome to which the given gene(s) correspond(s) 
+  * --*window_size* The window chosen around the chosen gene from the TSS and TES of the gene (default = 1 Mb) 
+  * --*gwas_p_threshold* The threshold for GWAS p-value for SNP variants corresponding to the chosen gene(s) (default = 1E-03) 
+  * --*eqtl_file* File for eQTL summary statistics (from GTEx) for chosen tissue, split by chromosome, with path 
+  * --*gwas_file* File for tab separated GWAS summary statistics data (with header) for chosen trait with column names SNP, BP, CHR, A1, A2, BETA, SE, P, FREQ, with path 
+  * --*genes_file* File (with path) for tab separated list of chosen genes with column names =  ENSG_gene, gene_start_position, gene_stop_position, chromosome
+  * --*maf* MAF threshold (default=0.01) 
+  * --*trait* Name of the trait 
+  * --*tissue* Name of tissue corresponding to the eQTL dataset 
+  * --*gwas_data_name* Name of GWAS dataset (e.g. GLGC, GIANT)
+  * --*cojo_p* P-value threshold for gcta-cojo (default = 1E-03) 
+  * --*gene_of_interest* ENSG_gene(s) of interest from genes_file (ignore decimal point)
+  * --*output_folder* Path of the output folder
+  * --*core* Number of cores to run parallel tasks (default = 10) 
+  * --*ld_folder* Path of the folder with plink files for LD calculation in gcta (should have chromosome number in the filename in .chromosome.bim/bed/fam format)
+  * --*eqtl_sample_size* Filename (with path) of sample sizes for eQTL datasets across different tissues; has two columns corresponding to tissue name and sample size
+  * --*coloc_p1* Prior probability a SNP is associated with GWAS trait (default = 1E-04)
+  * --*coloc_p2* Prior probability a SNP is associated with gene expression (default = 0.001) 
+  * --*coloc_p12* Prior probability a SNP is associated with GWAS trait and gene expression (default = 1E-06)
