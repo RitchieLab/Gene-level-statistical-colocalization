@@ -18,7 +18,7 @@ suppressMessages(library(optparse))
 opt_list <- list(
   make_option("--chromosome",type="integer",help="The chromosome to which the given gene corresponds"),
   make_option("--window_size",type="integer",default=1000000,help="The window chosen around the chosen gene from the TSS and TES of the gene (default = %default)"),
-  make_option("--gwas_p_threshold",type="integer",default=1e-03,help="The threshold for GWAS p-value for SNP variants corresponding to the chosen gene (default = %default)"),
+  make_option("--gwas_p_threshold",type="numeric",default=1e-03,help="The threshold for GWAS p-value for SNP variants corresponding to the chosen gene (default = %default)"),
   make_option("--eqtl_file",type="character",help="File for eQTL summary statistics (from GTEx) for chosen tissue, split by chromosome, with path"),
   make_option("--gwas_file",type="character",help="File for tab separated GWAS summary statistics data (with header) for chosen trait with column names SNP, BP, CHR, A1, A2, BETA, SE, P, FREQ, with path"),
   make_option("--maf",type="numeric",default=0.01,help="MAF threshold (default = %default)"),
@@ -31,9 +31,9 @@ opt_list <- list(
   make_option("--output_folder",type="character",help="Path of the output folder"),
   make_option("--ld_folder",type="character",help="Path of the folder with plink files for LD calculation in gcta (should have chromosome number in the filename in .chromosome.bim/bed/fam format)"),
   make_option("--eqtl_sample_size",type="character",help="Filename (with path) of sample sizes for eQTL datasets across different tissues; has two columns corresponding to tissue name and sample size"),
-  make_option("--coloc_p1",type="integer",default=1e-04,help="Prior probability a SNP is associated with GWAS trait (default = %default)"),
-  make_option("--coloc_p2",type="integer",default=0.001,help="Prior probability a SNP is associated with gene expression (default = %default)"),
-  make_option("--coloc_p12",type="integer",default=1e-06,help="Prior probability a SNP is associated with GWAS trait and gene expression (default = %default)"),
+  make_option("--coloc_p1",type="numeric",default=1e-04,help="Prior probability a SNP is associated with GWAS trait (default = %default)"),
+  make_option("--coloc_p2",type="numeric",default=0.001,help="Prior probability a SNP is associated with gene expression (default = %default)"),
+  make_option("--coloc_p12",type="numeric",default=1e-06,help="Prior probability a SNP is associated with GWAS trait and gene expression (default = %default)"),
   make_option("--core",type="integer",default=10,help="Number of cores to run parallel tasks (default = %default)"),
 )
 
