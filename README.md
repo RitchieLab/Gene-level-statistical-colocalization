@@ -117,4 +117,18 @@ Here is an explanation of the listed parameters
   * --*coloc_p2* Prior probability a SNP is associated with gene expression (default = 0.001) 
   * --*coloc_p12* Prior probability a SNP is associated with GWAS trait and gene expression (default = 1E-06)
   
-5. Run **identify_ld_contaminated_genes.R**
+5. Run **remove_ld_contaminated_genes.R**
+```
+Rscript remove_ld_contaminated_genes.R \
+  --file_name chr1_GLGC_LDL_Adipose_Subcutaneous_colocProbs.txt \
+  --coloc_p_h3_threshold 0.5 \
+  --coloc_p_h4_threshold 0.5 \
+  --output_folder "output"
+ ```
+ 
+Here is an explanation of the listed parameters
+
+  * --*file_name* Load coloc output file obtained after running run_gcta_and_coloc.R
+  * --*coloc_p_h3_threshold* Threshold for minP[H3] per gene across all lead SNPs in the gene (default=0.5)
+  * --*coloc_p_h4_threshold* Threshold for maxP[H4] per gene across all lead SNPs in the gene (default=0.5)
+  * --*output_folder* Folder where list of genes after removing LD-contaminated genes is saved
