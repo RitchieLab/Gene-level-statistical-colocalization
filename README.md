@@ -1,6 +1,6 @@
 There is no required version of R, but R (>=3.5.0) is preferred.
 
-To run simulation using run_twas_simulation.R, the following libraries are required:
+The following libraries are required to run this sofware:
 * [coloc](https://cran.r-project.org/web/packages/coloc/index.html)
 * [simsalapar](https://cran.r-project.org/web/packages/simsalapar/index.html)
 * [optparse](https://www.rdocumentation.org/packages/optparse/versions/1.6.6)
