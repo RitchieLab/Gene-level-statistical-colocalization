@@ -1,3 +1,5 @@
+This code is to identify and remove genes for which the expression predictor SNPs and causal phenotype SNPs are different but in linkage disequilibirum. 
+
 There is no required version of R, but R (>=3.5.0) is preferred.
 
 The following libraries are required to run this sofware:
