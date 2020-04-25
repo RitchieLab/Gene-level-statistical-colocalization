@@ -4,7 +4,7 @@ To run simulation using run_twas_simulation.R, the following libraries are requi
 * [coloc](https://cran.r-project.org/web/packages/coloc/index.html)
 * [simsalapar](https://cran.r-project.org/web/packages/simsalapar/index.html)
 * [optparse](https://www.rdocumentation.org/packages/optparse/versions/1.6.6)
-* Installed [GCTA](https://cnsgenomics.com/software/gcta/#Overview) v1.64 or higher
+* Installed [GCTA](https://cnsgenomics.com/software/gcta/#Overview) v1.26 or higher
 
 For running *colocalization*, we first identify a list of genes in a chromosome. 
 Next, we identify all the SNPs in the GWAS dataset that are within a specified window from the TSS and TES of the selected genes. 
