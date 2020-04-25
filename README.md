@@ -132,3 +132,6 @@ Following is an explanation of the listed parameters:
   * --*coloc_p_h3_threshold* Threshold for minP[H3] per gene across all lead SNPs in the gene (default=0.5)
   * --*coloc_p_h4_threshold* Threshold for maxP[H4] per gene across all lead SNPs in the gene (default=0.5)
   * --*output_folder* Folder where list of genes after removing LD-contaminated genes is saved
+  
+## Reference
+The manuscript "Unified framework identifies novel replicating links between plasma lipids and diseases from Electronic Health Records across large-scale cohorts" is currently under review.
