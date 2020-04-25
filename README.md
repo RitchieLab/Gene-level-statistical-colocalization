@@ -4,6 +4,7 @@ To run simulation using run_twas_simulation.R, the following libraries are requi
 * [coloc](https://cran.r-project.org/web/packages/coloc/index.html)
 * [simsalapar](https://cran.r-project.org/web/packages/simsalapar/index.html)
 * [optparse](https://www.rdocumentation.org/packages/optparse/versions/1.6.6)
+* [data.table](https://cran.r-project.org/web/packages/data.table/data.table.pdf)
 * Installed [GCTA](https://cnsgenomics.com/software/gcta/#Overview) v1.26 or higher
 
 For running *colocalization*, we first identify a list of genes in a chromosome. 
@@ -70,7 +71,7 @@ cd Remove-LD-contaminated-genes
 ```
 3. Download and unzip example data https://ritchielab.org/files/Lipid_Pleiotropy_project/LD_Contamination_example_data.tar.gz
 and save downloaded data under the cloned folder
-4. Run 'run_gcta_and_coloc.R'.
+4. Run **run_gcta_and_coloc.R**.
 ```
 Rscript run_gcta_and_coloc.R \
   --chromosome 1 \
@@ -115,3 +116,5 @@ Here is an explanation of the listed parameters
   * --*coloc_p1* Prior probability a SNP is associated with GWAS trait (default = 1E-04)
   * --*coloc_p2* Prior probability a SNP is associated with gene expression (default = 0.001) 
   * --*coloc_p12* Prior probability a SNP is associated with GWAS trait and gene expression (default = 1E-06)
+  
+5. Run **identify_ld_contaminated_genes.R**
