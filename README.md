@@ -65,13 +65,13 @@ rs2392072	100234743	1	a	g	0.0039	0.0058	0.4052	0.3153	86877
 ``` 
 git clone https://github.com/RitchieLab/Remove-LD-contaminated-genes
 ```
-2. Go to the cloned folder (set as working directory)
+2. Go to the cloned folder (set as working directory).
 ``` 
 cd Remove-LD-contaminated-genes 
 ```
 3. Download and unzip example data https://ritchielab.org/files/Lipid_Pleiotropy_project/LD_Contamination_example_data.tar.gz
-and save downloaded data under the cloned folder
-4. Run **run_gcta_and_coloc.R**.
+and save downloaded data under the cloned folder.
+4. Run ```run_gcta_and_coloc.R```.
 ```
 Rscript run_gcta_and_coloc.R \
   --chromosome 1 \
@@ -95,7 +95,7 @@ Rscript run_gcta_and_coloc.R \
   --coloc_p12 1E-06 
 ```
 
-Here is an explanation of the listed parameters
+Following is an explanation of the listed parameters:
 
   * --*chromosome* The chromosome to which the given gene(s) correspond(s) 
   * --*window_size* The window chosen around the chosen gene from the TSS and TES of the gene (default = 1 Mb) 
@@ -117,7 +117,7 @@ Here is an explanation of the listed parameters
   * --*coloc_p2* Prior probability a SNP is associated with gene expression (default = 0.001) 
   * --*coloc_p12* Prior probability a SNP is associated with GWAS trait and gene expression (default = 1E-06)
   
-5. Run **remove_ld_contaminated_genes.R**
+5. Run ```remove_ld_contaminated_genes.R```
 ```
 Rscript remove_ld_contaminated_genes.R \
   --file_name chr1_GLGC_LDL_Adipose_Subcutaneous_colocProbs.txt \
@@ -126,7 +126,7 @@ Rscript remove_ld_contaminated_genes.R \
   --output_folder "output"
  ```
  
-Here is an explanation of the listed parameters
+Following is an explanation of the listed parameters:
 
   * --*file_name* Load coloc output file obtained after running run_gcta_and_coloc.R
   * --*coloc_p_h3_threshold* Threshold for minP[H3] per gene across all lead SNPs in the gene (default=0.5)
