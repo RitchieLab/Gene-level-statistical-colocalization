@@ -74,7 +74,9 @@ cd Remove-LD-contaminated-genes
 ```
 3. Download and unzip example data https://ritchielab.org/files/Lipid_Pleiotropy_project/LD_Contamination_example_data.tar.gz
 and save downloaded data under the cloned folder.
-4. Run ```run_gcta_and_coloc.R```.
+4. Add ```gcta64``` to the folder path.
+
+5. Run ```run_gcta_and_coloc.R```.
 ```
 Rscript run_gcta_and_coloc.R \
   --chromosome 1 \
@@ -120,7 +122,7 @@ Following is an explanation of the listed parameters:
   * --*coloc_p2* Prior probability a SNP is associated with gene expression (default = 0.001) 
   * --*coloc_p12* Prior probability a SNP is associated with GWAS trait and gene expression (default = 1E-06)
   
-5. Run ```remove_ld_contaminated_genes.R```
+6. Run ```remove_ld_contaminated_genes.R```
 ```
 Rscript remove_ld_contaminated_genes.R \
   --file_name chr1_GLGC_LDL_Adipose_Subcutaneous_colocProbs.txt \
