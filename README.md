@@ -1,4 +1,4 @@
-This code is to identify and remove genes for which the expression predictor SNPs and causal phenotype SNPs are different but in linkage disequilibirum. 
+This code is to identify and remove genes for which the expression predictor SNPs and causal phenotype SNPs are different but in linkage disequilibrium. 
 
 There is no required version of R, but R (>=3.5.0) is preferred.
 
