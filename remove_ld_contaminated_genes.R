@@ -1,6 +1,6 @@
 ################## This code compiles results from run_gcta_and_coloc.R to remove genes that may have "LD contamination"
 #i.e. when expression predictor SNPs and GWAS causal SNPs are different but in LD. 
-#Here, we test whether conditionally independent GWAS significant variants in the gene have coloc P[H3]>0.5 with 
+#Here, for each gene, we test whether conditionally independent GWAS variants in the gene have coloc P[H3]>0.5 with 
 #corresponding eQTL SNPs (for a given tissue) implying the GWAS-significant variant and the eQTL correspond to independent 
 #signals. The software used to achieve conditionally independent variants is "GCTA-COJO" and the one used for testing 
 #for colocalization is "coloc"
