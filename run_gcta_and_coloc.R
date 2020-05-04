@@ -1,10 +1,9 @@
 rm(list=ls())
 
-################## This code uses statistical colocalization to remove a gene that may have "LD contamination", i.e. 
-#when expression predictor SNPs and GWAS causal SNPs are different but in LD. Here, we find conditionally independent 
-#GWAS significant variants in the gene and estimate their coloc P[H3] and P[H4].
-#The software used to achieve conditionally independent variants is "GCTA-COJO" and the one used for estimating colocalization'
-#probabilities is "coloc"
+################## This code uses statistical colocalization to identify genes that may have "LD contamination", i.e. 
+#when expression predictor SNPs and GWAS causal SNPs are different but in LD. Here, we find (i)conditionally independent 
+#variants in each gene in GWAS and eQTL datasets using "GCTA-COJO" and (ii) estimate the colocalization probabilities P[H3] 
+#and P[H4] per gene between GWAS and eQTL datasets using conditional p-values from GCTA-COJO in "coloc".
 #### Yogasudha Veturi 15April2020
 
 #############################################
