@@ -49,7 +49,7 @@ rs2392072	100234743	1	a	g	0.0039	0.0058	0.4052	0.3153	86877
 
 #### GCTA steps
 * We use the --cojo-slct option to perform model selection and get a list of independently associated testable SNPs (p-value < chosen threshold). 
-* If there are at least two independent testable SNPs at a distance > 100KB (but < 1 MB) from the lead SNP, we run GCTA-COJO again to perform association analysis on all testable SNPs conditioned on the independently associated SNPs procured from the first GCTA run. 
+* If there are at least two independent testable SNPs at a distance > 100KB (but < 1 MB) from the lead SNP, we run GCTA-COJO again to perform association analysis on all testable SNPs conditioned on the independently associated SNPs procured from the first GCTA run. We subsequently use these "conditional" p-values in our colocalization analyses
 * In our example dataset, we use 1000 genome EUR (chromosome 1) as reference dataset to calculate pairwise LD. 
 
 ### Coloc protocol:
