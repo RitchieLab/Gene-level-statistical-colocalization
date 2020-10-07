@@ -65,11 +65,11 @@ rs2392072	100234743	1	a	g	0.0039	0.0058	0.4052	0.3153	86877
 
 1. Clone the repository.
 ``` 
-git clone https://github.com/RitchieLab/Remove-LD-contaminated-genes
+git clone https://github.com/RitchieLab/Gene-level-statistical-colocalization
 ```
 2. Go to the cloned folder (set as working directory).
 ``` 
-cd Remove-LD-contaminated-genes 
+cd Gene-level-statistical-colocalization 
 ```
 3. Download and unzip example data https://ritchielab.org/files/Lipid_Pleiotropy_project/LD_Contamination_example_data.tar.gz
 and save downloaded data under the cloned folder.
