@@ -1,5 +1,4 @@
-This code is to identify and remove genes for which the expression predictor SNPs and causal phenotype SNPs are different but in linkage disequilibrium. 
-
+This code is to identify and filter out genes for which there is no evidence of statistical colocalization between the corresponding eQTLs (for a given tissue) and GWAS-significant SNPs
 There is no required version of R, but R (>=3.5.0) is preferred.
 
 The following libraries are required to run this sofware:
@@ -122,9 +121,9 @@ Following is an explanation of the listed parameters:
   * --*coloc_p2* Prior probability a SNP is associated with gene expression (default = 0.001) 
   * --*coloc_p12* Prior probability a SNP is associated with GWAS trait and gene expression (default = 1E-06)
   
-6. Run ```remove_ld_contaminated_genes.R```
+6. Run ```remove_non_colocalized_genes.R```
 ```
-Rscript remove_ld_contaminated_genes.R \
+Rscript remove_non_colocalized_genes.R \
   --file_name chr1_GLGC_LDL_Adipose_Subcutaneous_colocProbs.txt \
   --coloc_p_h3_threshold 0.5 \
   --coloc_p_h4_threshold 0.5 \
@@ -136,7 +135,7 @@ Following is an explanation of the listed parameters:
   * --*file_name* Load coloc output file obtained after running run_gcta_and_coloc.R
   * --*coloc_p_h3_threshold* Threshold for minP[H3] per gene across all lead SNPs in the gene (default=0.5)
   * --*coloc_p_h4_threshold* Threshold for maxP[H4] per gene across all lead SNPs in the gene (default=0.5)
-  * --*output_folder* Folder where list of genes after removing LD-contaminated genes is saved
+  * --*output_folder* Folder where list of genes after filtering out ones with no evidence of colocalization with GWAS SNPs is saved
   
 ## Reference
 The manuscript "Unified framework identifies novel replicating links between plasma lipids and diseases from Electronic Health Records across large-scale cohorts" is currently under review.
