@@ -1,4 +1,4 @@
-This code is to identify and filter out genes for which there is no evidence of statistical colocalization between the corresponding eQTLs (for a given tissue) and GWAS-significant SNPs
+Once we identify a set of genes of interest for a given trait, this code is to filter out those genes that do not have any evidence of statistical colocalization between the GWAS-significant SNPs and the corresponding eQTLs (for a given tissue).
 There is no required version of R, but R (>=3.5.0) is preferred.
 
 The following libraries are required to run this sofware:
