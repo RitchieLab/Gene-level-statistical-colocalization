@@ -43,7 +43,7 @@ ENSG00000261456.5	chr10_45349_G_A_b38	-28814	21	21	0.0180723	0.579648	0.124365	0
 ```
 
 #### GCTA steps
-* We use the --cojo-slct option to perform model selection and get a list of independently associated testable SNPs (p-value < chosen threshold). 
+* We use the --cojo-cond option to perform model selection and get a list of independently associated testable SNPs (p-value < chosen threshold). 
 * In our example dataset, we use 1000 genome EUR (chromosome 1) as reference dataset to calculate pairwise LD. 
 
 
