@@ -1,4 +1,4 @@
-This code can conduct statistical colocalization between GWAS-significant SNPs and the corresponding eQTLs (for a given tissue) on a gene-by-gene basis. This is ideally suited for situations in which we have a set of genes and tissues of interest (e.g. obtained from running Transcriptome wide Association Studies).
+This code can conduct statistical colocalization between GWAS-significant SNPs and the corresponding eQTLs (for a given tissue) on a gene-by-gene basis. This is ideally suited for situations in which we have a set of genes and tissues of interest (e.g. obtained from running Transcriptome wide Association Studies) and corresponding gene-expression and GWAS summary statistics.
 
 There is no required version of R, but R (>=3.5.0) is preferred.
 
