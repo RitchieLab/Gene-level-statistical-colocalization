@@ -85,7 +85,7 @@ Rscript run_gcta_and_coloc.R \
 --reference_folder=${reference_folder} \
 --lead_snps_file=${lead_snps} \
 --liftover_filename=hg38ToHg19.over.chain.gz \
---eqtl_sample_size=${num_eqtl_file}"
+--eqtl_sample_size=${num_eqtl_file}
 ```
 
 Following is an explanation of the listed parameters:
