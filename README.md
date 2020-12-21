@@ -9,14 +9,13 @@ The following libraries are required to run this sofware:
 * [data.table](https://cran.r-project.org/web/packages/data.table/data.table.pdf)
 * Installed [GCTA](https://cnsgenomics.com/software/gcta/#Overview) v1.26 or higher
 
-For running *colocalization*, we first identify all the SNPs in the GWAS dataset that are within a specified window from the TSS and TES of the selected gene and tissue. Of these, we consider as “lead SNPs” all SNPs in the GWAS dataset with a p-value < a chosen threshold that are > 100 KB apart from each other. 
-
 ### Coloc protocol:
+* For running *colocalization*, we first identify all the SNPs in the GWAS dataset that are within a specified window (default=1Mb) from the TSS and TES of the selected gene for a given tissue. Of these, we consider as “lead SNPs” all SNPs in the GWAS dataset with a p-value < a chosen threshold that are > 100 KB apart from each other. 
 * We collect the SNPs overlapping between GWAS and eQTL datasets for each lead SNP-eGene pair for a given tissue. 
 * We subsequently estimate the coloc probability of H3 (alternative hypothesis that eQTL and GWAS associations correspond to independent signals) and H4 (alternative hypothesis that eQTL and GWAS associations correspond to the same signal) for the lead SNP-eGene pair. 
-* We assume a prior probability that a SNP is associated with (1) lipid phenotype (default=1E-04), (2) gene expression (default=0.001), and (3) both GWAS and gene expression (default=1E-06) for all coloc analyses. 
-* We select the lead SNP with the lowest p[H3] and and highest p[H4] for a given eGene and use this as the corresponding p[H3] for the gene. 
-* We can subsequently filter out all genes whose p[H3]>0.5 for a given tissue. 
+* We assume a prior probability that a SNP is associated with (1) lipid phenotype (default=1E-04), (2) gene expression (default=1E=0-4), and (3) both GWAS and gene expression (default=1E-06) for all coloc analyses. 
+* We select the lead SNP with the lowest P[H3] for a given eGene and use this as the corresponding P[H3] for the gene. 
+* We can subsequently filter out all genes whose P[H3]>0.5 for a given tissue (these could be LD contaminated; i.e. GWAS causal variant and eQTL are different but in LD). 
 
 ### GCTA-COJO protocol: 
 * We use the following GCTA-COJO protocol in the GWAS and eQTL datasets for each lead SNP to identify putative independent seecondary associations at a locus. 
