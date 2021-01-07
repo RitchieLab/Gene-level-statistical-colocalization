@@ -63,7 +63,7 @@ NBEAL1  TC      Adipose_Visceral_Omentum        GLGC    ENSG00000144426 2
 ```
 
 ```
-## Pre-saved files needed to run this code:
+## Pre-saved files needed to run this code (these are already downloaded with the code):
 #eQTL sample size file (GTEX v8)
 
 Tissue  X..RNASeq.and.Genotyped.samples
