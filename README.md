@@ -9,6 +9,9 @@ The following libraries are required to run this sofware:
 * [data.table](https://cran.r-project.org/web/packages/data.table/data.table.pdf)
 * Installed [GCTA](https://cnsgenomics.com/software/gcta/#Overview) v1.26 or higher
 
+### Harmonization between GWAS and eQTL datasets
+* Seee https://github.com/hakyimlab/MetaXcan/wiki/Tutorial:-GTEx-v8-MASH-models-integration-with-a-Coronary-Artery-Disease-GWAS for basic steps on harmonizing between GWAS and GTEx v8 datasets so that they are on the same genome build (run_harmonization code in the example also shows the basic protocol for harmonization using a GLGC lipid dataset)
+
 ### Primary signals protocol:
 * Note that the following protocol is applied to each combination of gene, trait (quantitative or case/control for a given GWAS dataset), and tissue. We run statistical colocalization between GWAS summary statistics and gene expression summary statistics obtained from GTEx v8.
 * For running *colocalization*, we first identify all the SNPs in the GWAS dataset that are within a specified window (default = 1Mb) from the TSS and TES of the selected gene for a given tissue. Of these, we consider as “lead SNPs” all SNPs in the GWAS dataset with a p-value < a chosen threshold (default = 0.0001) that are at least a specified distance (default = 200 KB) apart from each other. 
@@ -21,7 +24,7 @@ The following libraries are required to run this sofware:
 * For each lead SNP, we obtain p-values conditional on the top-eQTL (p-value < chosen threshold; default = 0.0001) in the eQTL dataset at that locus using --cojo-cond option to perform stepwise regression. We perform stepwise regression in the GWAS dataset as well if the top-eQTL also has p-value < chosen threshold (default = 0.0001) in the GWAS dataset.
 
 ```
-#sample GWAS file
+#sample GWAS file (pre-harmonization)
 SNP	BP	CHR	A1	A2	BETA	SE	P	FREQ	N
 rs1172982	100230111	1	t	c	0.0043	0.0055	0.4689	0.3219	89888
 rs1172981	100230197	1	t	c	0.0057	0.0103	0.7688	0.06069	89888
@@ -144,10 +147,12 @@ Rscript run_gene_level_coloc.R \
 --output_folder=${output_folder} \
 --reference_folder=${reference_folder} \
 --eqtl_folder=${path_gtex} \
+--core=10 \
 --eqtl_sample_size_file=${path_gtex}/${eqtl_sample_size_file}
 
 done
 ```
+* Note that it is not recommended to run a for loop in practice; one can parallelize runs in an HPC environment.
 
 Following is an explanation of the listed parameters:
 
@@ -161,21 +166,20 @@ Following is an explanation of the listed parameters:
   * --*gwas_p_threshold* The threshold for GWAS p-value for SNP variants corresponding to the chosen gene(s) (default = 1E-03) 
   * --*eqtl_p_threshold* The threshold for eQTL p-value for SNP variants mapping to the chosen eGene(s) (default = 1E-02)
   * --*gwas_response_type* The response variable type for GWAS (quant or cc)
-  * --*eqtl_file* File for eQTL summary statistics (from GTEx) for chosen tissue, split by chromosome, with path 
   * --*coloc_p1* Prior probability a SNP is associated with GWAS trait (default = 1E-04)
   * --*coloc_p2* Prior probability a SNP is associated with gene expression (default = 0.001) 
   * --*coloc_p12* Prior probability a SNP is associated with GWAS trait and gene expression (default = 1E-06)
-  * --*gwas_file* File for tab separated GWAS summary statistics data (with header) for chosen trait with column names SNP, BP, CHR, A1, A2, BETA, SE, P, FREQ, with path 
+  * --*gwas_file* File for tab separated *harmomized* GWAS summary statistics data (with header) for chosen trait 
   * --*genes_file* File (with path) for tab separated list of chosen genes with column names =  ENSG_gene, gene_start_position, gene_stop_position, chromosome
-  * --*lead_snps_file* External Input file of GWAS lead varID, i.e. chr:bp
+  * --*snps_file* External Input file of GWAS varID to be used for analyses, i.e. chr:bp
   * --*cojo_maf* MAF threshold used in GCTA-COJO(default=0.01) 
   * --*cojo_p* P-value threshold for gcta-cojo (default = 1E-03)
   * --*reference_folder* Path of the folder with plink files for LD calculation in gcta (should have chromosome number in the filename in .chromosome.bim/bed/fam format)
+  * --*eqtl_folder* Path of the GTEX v8 datasets split by chromosome
   * --*output_folder* Path of the output folder
   * --*core* Number of cores to run parallel tasks (default = 10) 
   * --*ld_folder* Path of the folder with plink files for LD calculation in gcta (should have chromosome number in the filename in .chromosome.bim/bed/fam format)
-  * --*eqtl_sample_size* Filename (with path) of sample sizes for eQTL datasets across different tissues; has two columns corresponding to tissue name and sample size
-  * --*liftover_filename* Filename (with path) to UCSC chainfiles for liftover from GRCh 38 in GTEx v8 to GRCh 37
+  * --*eqtl_sample_size_file* Filename (with path) of sample sizes for eQTL datasets across different tissues; has two columns corresponding to tissue name and sample size
   
 6. Run ```remove_non_colocalized_genes.R```
 ```
