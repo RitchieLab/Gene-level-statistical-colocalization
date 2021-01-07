@@ -9,17 +9,16 @@ The following libraries are required to run this sofware:
 * [data.table](https://cran.r-project.org/web/packages/data.table/data.table.pdf)
 * Installed [GCTA](https://cnsgenomics.com/software/gcta/#Overview) v1.26 or higher
 
-### Coloc protocol:
-* For running *colocalization*, we first identify all the SNPs in the GWAS dataset that are within a specified window (default=1Mb) from the TSS and TES of the selected gene for a given tissue. Of these, we consider as “lead SNPs” all SNPs in the GWAS dataset with a p-value < a chosen threshold that are > 100 KB apart from each other. 
-* We collect the SNPs overlapping between GWAS and eQTL datasets for each lead SNP-eGene pair for a given tissue. 
+### Primary signals protocol:
+* Note that the following protocol is applied to each combination of gene, trait (quantitative or case/control for a given GWAS dataset), and tissue. We run statistical colocalization between GWAS summary statistics and gene expression summary statistics obtained from GTEx v8.
+* For running *colocalization*, we first identify all the SNPs in the GWAS dataset that are within a specified window (default = 1Mb) from the TSS and TES of the selected gene for a given tissue. Of these, we consider as “lead SNPs” all SNPs in the GWAS dataset with a p-value < a chosen threshold (default = 0.0001) that are at least a specified distance (default = 200 KB) apart from each other. 
+* For each lead SNP, we collect all the SNPs within a specified distance (default = 200KB) in both GWAS and eQTL datasets. 
 * We subsequently estimate the coloc probability of H3 (alternative hypothesis that eQTL and GWAS associations correspond to independent signals) and H4 (alternative hypothesis that eQTL and GWAS associations correspond to the same signal) for the lead SNP-eGene pair. 
 * We assume a prior probability that a SNP is associated with (1) lipid phenotype (default=1E-04), (2) gene expression (default=1E=0-4), and (3) both GWAS and gene expression (default=1E-06) for all coloc analyses. 
-* We select the lead SNP with the lowest P[H3] for a given eGene and use this as the corresponding P[H3] for the gene. 
-* We can subsequently filter out all genes whose P[H3]>0.5 for a given tissue (these could be LD contaminated; i.e. GWAS causal variant and eQTL are different but in LD). 
 
-### GCTA-COJO protocol: 
-* We use the following GCTA-COJO protocol in the GWAS and eQTL datasets for each lead SNP to identify putative independent seecondary associations at a locus. 
-* For each lead SNP, we obtain p-values conditional on the top-associated eQTL at that locus for GWAS and eQTL datasets using GCTA-COJO. 
+### Secondary signals protocol: 
+* We use the following GCTA-COJO/coloc protocol in the GWAS and eQTL datasets for each lead SNP to identify putative independent secondary associations at the locus. 
+* For each lead SNP, we obtain p-values conditional on the top-eQTL (p-value < chosen threshold; default = 0.0001) in the eQTL dataset at that locus using --cojo-cond option to perform stepwise regression. We perform stepwise regression in the GWAS dataset as well if the top-eQTL also has p-value < chosen threshold (default = 0.0001) in the GWAS dataset.
 
 ```
 #sample GWAS file
@@ -41,10 +40,53 @@ ENSG00000261456.5	chr10_44215_T_TTCTG_b38	-29948	13	13	0.0122411	0.608588	0.1302
 ENSG00000261456.5	chr10_45349_G_A_b38	-28814	21	21	0.0180723	0.579648	0.124365	0.224383
 ```
 
-#### GCTA steps
-* We use the --cojo-cond option to perform model selection and get a list of independently associated testable SNPs (p-value < chosen threshold). 
-* In our example dataset, we use 1000 genome EUR (chromosome 1) as reference dataset to calculate pairwise LD. 
+```
+#sample Input dataset
+SYPL2   TC      Liver   GLGC    ENSG00000143028 1
+ANGPTL3 LDL     Liver   GLGC    ENSG00000132855 1
+PSRC1   TC      Adipose_Visceral_Omentum        GLGC    ENSG00000134222 1
+PSRC1   LDL     Liver   GLGC    ENSG00000134222 1
+PLTP    TG      Adipose_Visceral_Omentum        GLGC    ENSG00000100979 20
+NBEAL1  TC      Adipose_Visceral_Omentum        GLGC    ENSG00000144426 2
+```
 
+```
+## Pre-saved files needed to run this code:
+#eQTL sample size file (GTEX v8)
+
+Tissue  X..RNASeq.and.Genotyped.samples
+Adipose_Subcutaneous    581
+Adipose_Visceral_Omentum        469
+Adrenal_Gland   233
+Artery_Aorta    387
+Artery_Coronary 213
+Artery_Tibial   584
+Brain_Amygdala  129
+Brain_Anterior_cingulate_cortex_BA24    147
+
+#Gene start stop file (GRCh38)
+
+ENSG00000265692 82290046        82292814        LINC01970       17
+ENSG00000260563 82293716        82294910        AC132872.1      17
+ENSG00000173762 82314868        82317608        CD7     17
+ENSG00000141574 82321024        82334074        SECTM1  17
+ENSG00000182459 82359247        82363775        TEX19   17
+ENSG00000278964 82362349        82363196        AC132938.4      17
+ENSG00000181408 82371400        82375586        UTS2R   17
+ENSG00000260011 82381110        82382690        AC132938.1      17
+ENSG00000181396 82389210        82418637        OGFOD3  17
+ENSG00000264812 82400703        82401382        AC132938.2      17
+ENSG00000201239 82417226        82417321        Y_RNA   17
+ENSG00000169660 82418318        82442645        HEXD    17
+ENSG00000279066 82425498        82427310        HEXD-IT1        17
+```
+* In our example dataset, we use 1000 genome EUR (chromosome 1) as reference dataset to calculate pairwise LD. In reality, it is recommended to use at least 5K individuals of same ethnicity as reference dataset.
+* We run *coloc* between GWAS and eQTL datasets at the locus using conditional probabilities obtained from COJO.
+
+### Collect and compile
+
+* We select the lead SNP with the lowest P[H3] for a given eGene and use this as the corresponding P[H3] for the gene. 
+* We can subsequently filter out all genes whose P[H3]>0.5 for a given tissue (these could be LD contaminated; i.e. GWAS causal variant and eQTL are different but in LD). 
 
 ## Setup and Example
 
@@ -60,9 +102,29 @@ cd Gene-level-statistical-colocalization
 and save downloaded data under the cloned folder.
 4. Add ```gcta64``` to the folder path.
 
-5. Run ```run_gcta_and_coloc.R```.
+5. Run ```run_gene_level_coloc.R```.
 ```
-Rscript run_gcta_and_coloc.R \
+input=Input_gene_trait_tissue_data_ensg.txt
+genes_list=($(awk '{print $1}' ${input}))
+traits_list=($(awk '{print $2}' ${input}))
+tissues_list=($(awk '{print $3}' ${input}))
+datasets_list=($(awk '{print $4}' ${input}))
+ensg_list=($(awk '{print $5}' ${input}))
+chr_list=($(awk '{print $6}' ${input}))
+genes_file=ENSG_start_stop_chr_gene_mart_export.txt
+eqtl_sample_size_file=GTEx_v8_PredictDB_tissues_num_samples.txt
+lines=`expr $(< "$input" wc -l) - 1`
+
+for i in $( seq 0 $lines )
+do
+dataset=${datasets_list[${i}]}
+tissue=${tissues_list[${i}]}
+trait=${traits_list[${i}]}
+gene=${genes_list[${i}]}
+ensg=${ensg_list[${i}]}
+chr=${chr_list[${i}]}
+
+Rscript run_gene_level_coloc.R \
 --gwas_data_name=${dataset} \
 --trait=${trait} \
 --tissue=${tissue} \
@@ -72,20 +134,19 @@ Rscript run_gcta_and_coloc.R \
 --coloc_p1=1e-04 \
 --coloc_p2=1e-04 \
 --coloc_p12=1e-06 \
---lead_snp_window_size=100000 \
+--lead_snp_window_size=200000 \
 --gene_boundary_window_size=1000000 \
 --gwas_p_threshold=0.0001 \
---eqtl_p_threshold=0.001 \
---core=10 \
---gwas_response_type="cc" \
---gwas_file=${path_gwas}/${dataset_gwas}_${trait}.txt \
---eqtl_file=${path_gtex}/${tissue}.allpairs.chr${chr}.txt.gz \
+--eqtl_p_threshold=0.0001 \
+--gwas_response_type="quant" \
+--gwas_file=${path_gwas}/${dataset}_${trait}_GWAS_harmonized.txt.gz \
 --genes_file=${genes_file} \
 --output_folder=${output_folder} \
 --reference_folder=${reference_folder} \
---lead_snps_file=${lead_snps} \
---liftover_filename=hg38ToHg19.over.chain.gz \
---eqtl_sample_size=${num_eqtl_file}
+--eqtl_folder=${path_gtex} \
+--eqtl_sample_size_file=${path_gtex}/${eqtl_sample_size_file}
+
+done
 ```
 
 Following is an explanation of the listed parameters:
