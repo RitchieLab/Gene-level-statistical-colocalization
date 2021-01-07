@@ -3,7 +3,7 @@ rm(list=ls())
 
 ################## This code uses statistical colocalization to identify whether lead SNPs from GWAS summary statistics colocalize with cis-eQTL for a give gene. This gene could be TWAS-significant and have "LD contamination", i.e.expression predictor SNPs and GWAS causal SNPs are different but in LD. Here, we test whether GWAS significant variants in the gene have coloc P[H3]<0.5 and P[H4]>0.5  with corresponding eQTL SNPs (for a given tissue) implying the GWAS-significant variant and the eQTL are likely to correspond to the same signal. The software used for colocalization analysis is "coloc", which assumes a single causal variant in a locus. In case we find evidence for colocalization, we also run GCTA-COJO, which can condition variants mapping to the gene on the top eQTL-associated GWAS SNP. These conditional p-values are then fed into "coloc" to test for potential secondary signals.
 
-#### Yogasudha Veturi 26October2020
+#### Yogasudha Veturi 07Jan2021
 
 #############################################
 ## 1. Load necessary libraries
@@ -366,7 +366,7 @@ for(j in 1:length(lead_snps)){ # Loop starts for lead snps
         tmp.1 <- tryCatch.W.E(read.table(paste0("intermediate/GWAS_",trait,"_",gwas.data.name,"_chr_",chr,"_pos_",pos,"_",gene_name,"_conditionalP.cma.cojo"),header=T))
         warn.1 <- inherits(tmp.1$warning,"warning")
         error.1 <- inherits(tmp.1$value,"error")
-        if(error.1==FALSE){
+        if(error.1==FALSE&length(which(is.na(tmp.1$value[,"pC"])))==0){
           gwas.coloc <- tmp.1$value
           gwas.coloc[,"SNP"] <- paste0(gwas.coloc[,"Chr"],":",gwas.coloc[,"bp"])
           gwas.coloc <- gwas.coloc[,c("Chr","SNP","bp","refA","freq","bC","bC_se","pC","n")]
@@ -379,7 +379,7 @@ for(j in 1:length(lead_snps)){ # Loop starts for lead snps
     tmp.2 <-  tryCatch.W.E(read.table(paste0("intermediate/",tissue,"_chr_",chr,"_pos_",pos,"_",gene_name,"_conditionalP.cma.cojo"),header=T))
     warn.2 <- inherits(tmp.2$warning,"warning")
     error.2 <- inherits(tmp.2$value,"error")
-    if(error.2==FALSE){
+    if(error.2==FALSE&length(which(is.na(tmp.2$value[,"pC"])))==0){
       eqtl.coloc <- tmp.2$value
       eqtl.coloc[,"SNP"] <- paste0(eqtl.coloc[,"Chr"],":",eqtl.coloc[,"bp"])
       eqtl.coloc <- eqtl.coloc[,c("Chr","SNP","bp","refA","freq","bC","bC_se","pC","n")]
