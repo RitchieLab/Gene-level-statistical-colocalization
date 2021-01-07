@@ -22,6 +22,15 @@ The following libraries are required to run this sofware:
 ### Secondary signals protocol: 
 * We use the following GCTA-COJO/coloc protocol in the GWAS and eQTL datasets for each lead SNP to identify putative independent secondary associations at the locus. 
 * For each lead SNP, we obtain p-values conditional on the top-eQTL (p-value < chosen threshold; default = 0.0001) in the eQTL dataset at that locus using --cojo-cond option to perform stepwise regression. We perform stepwise regression in the GWAS dataset as well if the top-eQTL also has p-value < chosen threshold (default = 0.0001) in the GWAS dataset.
+* In our example dataset, we use 1000 genome EUR (chromosome 1) as reference dataset to calculate pairwise LD. In reality, it is recommended to use at least 5K individuals of same ethnicity as reference dataset.
+* We run *coloc* between GWAS and eQTL datasets (same parameters as before) at the locus using conditional probabilities obtained from COJO.
+
+### Collect and compile
+
+* We select the lead SNP with the lowest P[H3] for a given eGene and use this as the corresponding P[H3] for the gene. 
+* We can subsequently filter out all genes whose P[H3]>0.5 for a given tissue (these could be LD contaminated; i.e. GWAS causal variant and eQTL are different but in LD). 
+
+## Input files
 
 ```
 #sample GWAS file (pre-harmonization)
@@ -83,13 +92,6 @@ ENSG00000201239 82417226        82417321        Y_RNA   17
 ENSG00000169660 82418318        82442645        HEXD    17
 ENSG00000279066 82425498        82427310        HEXD-IT1        17
 ```
-* In our example dataset, we use 1000 genome EUR (chromosome 1) as reference dataset to calculate pairwise LD. In reality, it is recommended to use at least 5K individuals of same ethnicity as reference dataset.
-* We run *coloc* between GWAS and eQTL datasets at the locus using conditional probabilities obtained from COJO.
-
-### Collect and compile
-
-* We select the lead SNP with the lowest P[H3] for a given eGene and use this as the corresponding P[H3] for the gene. 
-* We can subsequently filter out all genes whose P[H3]>0.5 for a given tissue (these could be LD contaminated; i.e. GWAS causal variant and eQTL are different but in LD). 
 
 ## Setup and Example
 
