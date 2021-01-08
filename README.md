@@ -66,29 +66,29 @@ NBEAL1  TC      Adipose_Visceral_Omentum        GLGC    ENSG00000144426 2
 #eQTL sample size file (GTEX v8)
 
 Tissue  X..RNASeq.and.Genotyped.samples
-Adipose_Subcutaneous    581
+Adipose_Subcutaneous            581
 Adipose_Visceral_Omentum        469
-Adrenal_Gland   233
-Artery_Aorta    387
-Artery_Coronary 213
-Artery_Tibial   584
-Brain_Amygdala  129
+Adrenal_Gland                   233
+Artery_Aorta                    387
+Artery_Coronary                 213
+Artery_Tibial                   584
+Brain_Amygdala                  129
 Brain_Anterior_cingulate_cortex_BA24    147
 
 #Gene start stop file (GRCh38)
 
 ENSG00000265692 82290046        82292814        LINC01970       17
 ENSG00000260563 82293716        82294910        AC132872.1      17
-ENSG00000173762 82314868        82317608        CD7     17
-ENSG00000141574 82321024        82334074        SECTM1  17
-ENSG00000182459 82359247        82363775        TEX19   17
+ENSG00000173762 82314868        82317608        CD7             17
+ENSG00000141574 82321024        82334074        SECTM1          17
+ENSG00000182459 82359247        82363775        TEX19           17
 ENSG00000278964 82362349        82363196        AC132938.4      17
-ENSG00000181408 82371400        82375586        UTS2R   17
+ENSG00000181408 82371400        82375586        UTS2R           17
 ENSG00000260011 82381110        82382690        AC132938.1      17
-ENSG00000181396 82389210        82418637        OGFOD3  17
+ENSG00000181396 82389210        82418637        OGFOD3          17
 ENSG00000264812 82400703        82401382        AC132938.2      17
-ENSG00000201239 82417226        82417321        Y_RNA   17
-ENSG00000169660 82418318        82442645        HEXD    17
+ENSG00000201239 82417226        82417321        Y_RNA           17
+ENSG00000169660 82418318        82442645        HEXD            17
 ENSG00000279066 82425498        82427310        HEXD-IT1        17
 
 #Chromosome-wise reference files for COJO in {chr}.bim/.bed/.fam format (1000 Genomes EUR (b38) available in the example dataset)
