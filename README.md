@@ -90,6 +90,9 @@ ENSG00000264812 82400703        82401382        AC132938.2      17
 ENSG00000201239 82417226        82417321        Y_RNA   17
 ENSG00000169660 82418318        82442645        HEXD    17
 ENSG00000279066 82425498        82427310        HEXD-IT1        17
+
+#Chromosome-wise reference files for COJO in {chr}.bim/.bed/.fam format (1000 Genomes EUR (b38) available in the example dataset)
+
 ```
 
 ## Output file
