@@ -65,14 +65,14 @@ NBEAL1  TC      Adipose_Visceral_Omentum        GLGC    ENSG00000144426 2
 ## Pre-saved files needed to run this code (these are downloaded with the code):
 #eQTL sample size file (GTEX v8)
 
-Tissue  X..RNASeq.and.Genotyped.samples
-Adipose_Subcutaneous            581
-Adipose_Visceral_Omentum        469
-Adrenal_Gland                   233
-Artery_Aorta                    387
-Artery_Coronary                 213
-Artery_Tibial                   584
-Brain_Amygdala                  129
+Tissue          X..RNASeq.and.Genotyped.samples
+Adipose_Subcutaneous                    581
+Adipose_Visceral_Omentum                469
+Adrenal_Gland                           233
+Artery_Aorta                            387
+Artery_Coronary                         213
+Artery_Tibial                           584
+Brain_Amygdala                          129
 Brain_Anterior_cingulate_cortex_BA24    147
 
 #Gene start stop file (GRCh38)
@@ -98,7 +98,7 @@ ENSG00000279066 82425498        82427310        HEXD-IT1        17
 ## Output file
 
 ```
-Trait   TC      TC      TC      TC
+*Trait*   TC      TC      TC      TC
 Tissue  Adipose_Visceral_Omentum        Adipose_Visceral_Omentum        Adipose_Visceral_Omentum        Adipose_Visceral_Omentum
 GWAS.Data       GLGC    GLGC    GLGC    GLGC
 CHR     2       2       2       2
