@@ -10,23 +10,22 @@ The following libraries are required to run this sofware:
 * Installed [GCTA](https://cnsgenomics.com/software/gcta/#Overview) v1.26 or higher
 
 ### Harmonization between GWAS and eQTL datasets
-* Seee https://github.com/hakyimlab/MetaXcan/wiki/Tutorial:-GTEx-v8-MASH-models-integration-with-a-Coronary-Artery-Disease-GWAS for basic steps on harmonizing between GWAS and GTEx v8 datasets so that they are on the same genome build (run_harmonization code in the example also shows the basic protocol for harmonization using a GLGC lipid dataset)
+* Seee https://github.com/hakyimlab/MetaXcan/wiki/Tutorial:-GTEx-v8-MASH-models-integration-with-a-Coronary-Artery-Disease-GWAS for basic steps on harmonizing between GWAS and GTEx v8 datasets so that they are on the same genome build (run_harmonization code in the example also shows the basic protocol for harmonization between a GLGC lipid dataset and GTEx v8 eQTL dataset)
 
 ### Primary signals protocol:
 * Note that the following protocol is applied to each combination of gene, trait (quantitative or case/control for a given GWAS dataset), and tissue. We run statistical colocalization between GWAS summary statistics and gene expression summary statistics obtained from GTEx v8.
-* For running *colocalization*, we first identify all the SNPs in the GWAS dataset that are within a specified window (default = 1Mb) from the TSS and TES of the selected gene for a given tissue. Of these, we consider as “lead SNPs” all SNPs in the GWAS dataset with a p-value < a chosen threshold (default = 0.0001) that are at least a specified distance (default = 200 KB) apart from each other. 
-* For each lead SNP, we collect all the SNPs within a specified distance (default = 200KB) in both GWAS and eQTL datasets. 
+* For running *colocalization*, we first identify all the SNPs in the GWAS dataset that are within a specified window (default = 1Mb) from the TSS and TES of the selected gene for a given tissue. Of these, we consider as “lead SNPs” all SNPs in the GWAS dataset with a p-value < a chosen threshold (default = 0.0001) that are at least a specified distance (default = 400 KB) apart from each other. 
+* For each lead SNP, we collect all the SNPs within a specified distance (default = 200KB on either side of the SNP) in both GWAS and eQTL datasets. 
 * We subsequently estimate the coloc probability of H3 (alternative hypothesis that eQTL and GWAS associations correspond to independent signals) and H4 (alternative hypothesis that eQTL and GWAS associations correspond to the same signal) for the lead SNP-eGene pair. 
 * We assume a prior probability that a SNP is associated with (1) lipid phenotype (default=1E-04), (2) gene expression (default=1E=0-4), and (3) both GWAS and gene expression (default=1E-06) for all coloc analyses. 
 
 ### Secondary signals protocol: 
 * We use the following GCTA-COJO/coloc protocol in the GWAS and eQTL datasets for each lead SNP to identify putative independent secondary associations at the locus. 
-* For each lead SNP, we obtain p-values conditional on the top-eQTL (p-value < chosen threshold; default = 0.0001) in the eQTL dataset at that locus using --cojo-cond option to perform stepwise regression. We perform stepwise regression in the GWAS dataset as well if the top-eQTL also has p-value < chosen threshold (default = 0.0001) in the GWAS dataset.
-* In our example dataset, we use 1000 genome EUR (chromosome 1) as reference dataset to calculate pairwise LD. In reality, it is recommended to use at least 5K individuals of same ethnicity as reference dataset.
+* For each lead SNP, we obtain p-values conditional on the top-eQTL (p-value < chosen threshold; default = 0.0001) in the eQTL dataset using --cojo-cond option to perform stepwise regression at that locus. We repeat this in the GWAS dataset as well if the top-eQTL also has GWAS p-value < chosen threshold (default = 0.0001).
+* In our example dataset, we use 1000 genome EUR as reference dataset to calculate pairwise LD. In reality, it is recommended to use at least 5K individuals in the reference dataset.
 * We run *coloc* between GWAS and eQTL datasets (same parameters as before) at the locus using conditional probabilities obtained from COJO.
 
 ### Collect and compile
-
 * We select the lead SNP with the lowest P[H3] for a given eGene and use this as the corresponding P[H3] for the gene. 
 * We can subsequently filter out all genes whose P[H3]>0.5 for a given tissue (these could be LD contaminated; i.e. GWAS causal variant and eQTL are different but in LD). 
 
