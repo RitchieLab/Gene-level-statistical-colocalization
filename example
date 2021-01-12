@@ -1,0 +1,52 @@
+# DOWNLOAD DATA HERE: https://ritchielab.org/files/Lipid_Pleiotropy_project/gene_level_coloc_example_data.tar.gz
+path=$PWD
+path_gwas=$PWD/harmonized_gwas
+path_gtex=$PWD/GTEx
+reference_folder=$PWD/reference_data
+output_folder=$PWD/output
+mkdir $PWD/out
+
+input=Input_gene_trait_tissue_data_ensg.txt
+genes_list=($(awk '{print $1}' ${input}))
+traits_list=($(awk '{print $2}' ${input}))
+tissues_list=($(awk '{print $3}' ${input}))
+datasets_list=($(awk '{print $4}' ${input}))
+ensg_list=($(awk '{print $5}' ${input}))
+chr_list=($(awk '{print $6}' ${input}))
+genes_file=ENSG_start_stop_chr_gene_mart_export.txt
+eqtl_sample_size_file=GTEx_v8_PredictDB_tissues_num_samples.txt
+lines=`expr $(< "$input" wc -l) - 1`
+
+for i in $( seq 0 $lines )
+do
+dataset=${datasets_list[${i}]}
+tissue=${tissues_list[${i}]}
+trait=${traits_list[${i}]}
+gene=${genes_list[${i}]}
+ensg=${ensg_list[${i}]}
+chr=${chr_list[${i}]}
+
+Rscript ../run_gene_level_coloc.R \
+--gwas_data_name=${dataset} \
+--trait=${trait} \
+--tissue=${tissue} \
+--gene_of_interest=${ensg} \
+--run_cojo=FALSE \
+--cojo_maf=0.01 \
+--chr=${chr} \
+--coloc_p1=1e-04 \
+--coloc_p2=1e-04 \
+--coloc_p12=1e-06 \
+--lead_snp_window_size=200000 \
+--gene_boundary_window_size=1000000 \
+--gwas_p_threshold=0.0001 \
+--eqtl_p_threshold=0.0001 \
+--gwas_response_type="quant" \
+--gwas_file=${path_gwas}/${dataset}_${trait}_GWAS_harmonized.txt.gz \
+--genes_file=${genes_file} \
+--output_folder=${output_folder} \
+--reference_folder=${reference_folder} \
+--eqtl_folder=${path_gtex} \
+--eqtl_sample_size_file=${path_gtex}/${eqtl_sample_size_file} &> out/geneLevelColoc_${i}.log
+echo "$i"
+done
