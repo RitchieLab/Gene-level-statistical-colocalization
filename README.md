@@ -164,7 +164,7 @@ and save downloaded data under the cloned folder.
 
 6. Add ```gcta64``` to the folder path.
 
-7. Run ```example```.
+7. Run ```sh example```.
 
 ```
 Rscript run_gene_level_coloc.R \
