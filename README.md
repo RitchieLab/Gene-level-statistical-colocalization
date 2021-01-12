@@ -157,38 +157,19 @@ cd Gene-level-statistical-colocalization
 ```
 3. Download and unzip example data https://ritchielab.org/files/Lipid_Pleiotropy_project/gene_level_coloc_example_data.tar.gz
 and save downloaded data under the cloned folder.
+
 4. Add ```gcta64``` to the folder path.
 
 5. Run ```run_gene_level_coloc.R```.
 ```
-input=Input_gene_trait_tissue_data_ensg.txt
-genes_list=($(awk '{print $1}' ${input}))
-traits_list=($(awk '{print $2}' ${input}))
-tissues_list=($(awk '{print $3}' ${input}))
-datasets_list=($(awk '{print $4}' ${input}))
-ensg_list=($(awk '{print $5}' ${input}))
-chr_list=($(awk '{print $6}' ${input}))
-genes_file=ENSG_start_stop_chr_gene_mart_export.txt
-eqtl_sample_size_file=GTEx_v8_PredictDB_tissues_num_samples.txt
-lines=`expr $(< "$input" wc -l) - 1`
-
-for i in $( seq 0 $lines )
-do
-dataset=${datasets_list[${i}]}
-tissue=${tissues_list[${i}]}
-trait=${traits_list[${i}]}
-gene=${genes_list[${i}]}
-ensg=${ensg_list[${i}]}
-chr=${chr_list[${i}]}
-
 Rscript run_gene_level_coloc.R \
---gwas_data_name=${dataset} \
---trait=${trait} \
---tissue=${tissue} \
---gene_of_interest=${ensg} \
+--gwas_data_name="GLGC" \
+--trait="LDL" \
+--tissue="Liver" \
+--gene_of_interest="ENSG00000144426" \
 --run_cojo=FALSE \
 --cojo_maf=0.01 \
---chr=${chr} \
+--chr=2 \
 --coloc_p1=1e-04 \
 --coloc_p2=1e-04 \
 --coloc_p12=1e-06 \
@@ -197,17 +178,17 @@ Rscript run_gene_level_coloc.R \
 --gwas_p_threshold=0.0001 \
 --eqtl_p_threshold=0.0001 \
 --gwas_response_type="quant" \
---gwas_file=${path_gwas}/${dataset}_${trait}_GWAS_harmonized.txt.gz \
+--gwas_file=GLGC_LDL_GWAS_harmonized.txt.gz \
 --genes_file=${genes_file} \
 --output_folder=${output_folder} \
 --reference_folder=${reference_folder} \
 --eqtl_folder=${path_gtex} \
 --core=10 \
---eqtl_sample_size_file=${path_gtex}/${eqtl_sample_size_file}
+--eqtl_sample_size_file=${eqtl_sample_size_file}
 
 done
 ```
-* Note that it is not recommended to run a for loop in practice; one can parallelize runs in an HPC environment.
+* Note that it is not recommended to run a for loop over genes in Input file in practice; one can parallelize runs in an HPC environment.
 
 Following is an explanation of the listed parameters:
 
