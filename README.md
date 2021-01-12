@@ -191,9 +191,8 @@ Rscript run_gene_level_coloc.R \
 --core=10 \
 --eqtl_sample_size_file=${eqtl_sample_size_file}
 
-done
 ```
-* Note that it is not recommended to run a for loop over genes in Input file in practice; one can parallelize runs in an HPC environment.
+* Note that it is not recommended to run a for loop over genes specified in Input file in practice; one can parallelize runs in an HPC environment.
 
 Following is an explanation of the listed parameters:
 
