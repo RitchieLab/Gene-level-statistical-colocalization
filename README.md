@@ -20,7 +20,7 @@ The following libraries are required to run this sofware:
 * We assume a prior probability that a SNP is associated with (1) lipid phenotype (default=1E-04), (2) gene expression (default=1E=0-4), and (3) both GWAS and gene expression (default=1E-06) for all coloc analyses. 
 
 ### Secondary signals protocol: 
-* We use the following GCTA-COJO/coloc protocol in the GWAS and eQTL datasets for each lead SNP to identify putative independent secondary associations at the locus. 
+* OPTIONAL: We use the following GCTA-COJO/coloc protocol in the GWAS and eQTL datasets for each lead SNP to identify putative independent secondary associations at the locus. 
 * For each lead SNP, we obtain p-values conditional on the top-eQTL (p-value < chosen threshold; default = 0.0001) in the eQTL dataset using --cojo-cond option to perform stepwise regression at that locus. We repeat this in the GWAS dataset as well if the top-eQTL also has GWAS p-value < chosen threshold (default = 0.0001).
 * In our example dataset, we use 1000 genome EUR as reference dataset to calculate pairwise LD. In reality, it is recommended to use at least 5K individuals in the reference dataset.
 * We run *coloc* between GWAS and eQTL datasets (same parameters as before) at the locus using conditional probabilities obtained from COJO.
@@ -186,6 +186,7 @@ Rscript run_gene_level_coloc.R \
 --trait=${trait} \
 --tissue=${tissue} \
 --gene_of_interest=${ensg} \
+--run_cojo=FALSE \
 --cojo_maf=0.01 \
 --chr=${chr} \
 --coloc_p1=1e-04 \
@@ -226,6 +227,7 @@ Following is an explanation of the listed parameters:
   * --*gwas_file* File for tab separated *harmomized* GWAS summary statistics data (with header) for chosen trait 
   * --*genes_file* File (with path) for tab separated list of chosen genes with column names =  ENSG_gene, gene_start_position, gene_stop_position, chromosome
   * --*snps_file* External Input file of GWAS varID to be used for analyses, i.e. chr:bp
+  * --*run_cojo* Flag to run GCTA-COJO for identifying secondary signals; TRUE/FALSE (default=FALSE)
   * --*cojo_maf* MAF threshold used in GCTA-COJO(default=0.01) 
   * --*cojo_p* P-value threshold for gcta-cojo (default = 1E-03)
   * --*reference_folder* Path of the folder with plink files for LD calculation in gcta (should have chromosome number in the filename in .chromosome.bim/bed/fam format)
