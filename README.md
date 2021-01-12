@@ -158,9 +158,14 @@ cd Gene-level-statistical-colocalization
 3. Download and unzip example data https://ritchielab.org/files/Lipid_Pleiotropy_project/gene_level_coloc_example_data.tar.gz
 and save downloaded data under the cloned folder.
 
-4. Add ```gcta64``` to the folder path.
+4. ```tar -xvzf gene_level_coloc_example_data.tar.gz```
 
-5. Run ```run_gene_level_coloc.R```.
+5. run harmonization (see ```run_harmonization``` example code under ```harmonized_gwas``` folder)
+
+6. Add ```gcta64``` to the folder path.
+
+7. Run ```example```.
+
 ```
 Rscript run_gene_level_coloc.R \
 --gwas_data_name="GLGC" \
