@@ -1,4 +1,8 @@
+#### Yogasudha Veturi 07Jan2021
+
 # DOWNLOAD DATA HERE: https://ritchielab.org/files/Lipid_Pleiotropy_project/gene_level_coloc_example_data.tar.gz
+
+
 path=$PWD
 path_gwas=$PWD/harmonized_gwas
 path_gtex=$PWD/GTEx
