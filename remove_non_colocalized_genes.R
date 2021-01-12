@@ -1,10 +1,6 @@
-################## This code compiles results from run_gcta_and_coloc.R to filter out genes with no evidence of colocalization
-#Here, for each gene, we test whether conditionally independent GWAS variants in the gene have coloc P[H3]>0.5 and P[H4]<0.5 with 
-#corresponding eQTL SNPs (for a given tissue) implying the GWAS-significant variant and the eQTL correspond to independent 
-#signals. The software used to achieve conditionally independent variants is "GCTA-COJO" and the one used for testing 
-#for colocalization is "coloc"
+################## This code compiles results from run_gene_level_coloc.R across genes to filter out genes with no evidence of colocalization
 
-#### Yogasudha Veturi 15April2020
+#### Yogasudha Veturi 12January2021
 
 #############################################
 ## 1. Load necessary libraries
@@ -18,10 +14,10 @@ suppressMessages(library(data.table))
 #############################################
 
 opt_list <- list(
-  make_option("--file_name",type="character",help="Load coloc output file obtained after running run_gcta_and_coloc.R"),
+  make_option("--file_name",type="character",help="Load coloc output file obtained after running run_gene_level_coloc.R"),
   make_option("--coloc_p_h3_threshold",type="numeric",default=0,5,help="Threshold for minP[H3] per gene across all lead SNPs in the gene (default=%default)"),
   make_option("--coloc_p_h4_threshold",type="numeric",default=0.5,help="Threshold for maxP[H4] per gene across all lead SNPs in the gene (default=%default)"),
-  make_option("--output_folder",type="character",help="Folder where list of genes after removing LD contaminated ones is saved")
+  make_option("--output_folder",type="character",help="Folder where list of genes is saved")
 )
 
 opts <- parse_args(OptionParser(option_list=opt_list))
