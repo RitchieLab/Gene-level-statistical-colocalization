@@ -155,7 +155,7 @@ git clone https://github.com/RitchieLab/Gene-level-statistical-colocalization
 ``` 
 cd Gene-level-statistical-colocalization 
 ```
-3. Download and unzip example data https://ritchielab.org/files/Lipid_Pleiotropy_project/LD_Contamination_example_data.tar.gz
+3. Download and unzip example data https://ritchielab.org/files/Lipid_Pleiotropy_project/gene_level_coloc_example_data.tar.gz
 and save downloaded data under the cloned folder.
 4. Add ```gcta64``` to the folder path.
 
