@@ -141,8 +141,8 @@ if(length(unique(eqtl.fin[,"CHR"]))==0) stop("eQTL allpairs dataset does not cor
 eqtl_pos_alleles <- eqtl_chrpos_alleles[-grep("chr",eqtl_chrpos_alleles)]
 eqtl.fin[,"BP"] <- eqtl_pos_alleles[-grep("A|C|T|G|a|c|t|g",eqtl_pos_alleles)]
 eqtl_alleles <- eqtl_pos_alleles[grep("A|C|T|G|a|c|t|g",eqtl_pos_alleles)]
-eqtl.fin[,"A1"] <- eqtl_alleles[-which(c(1:length(eqtl_alleles))%%2==0)]
-eqtl.fin[,"A2"] <- eqtl_alleles[which(c(1:length(eqtl_alleles))%%2==0)]
+eqtl.fin[,"A1"] <- eqtl_alleles[which(c(1:length(eqtl_alleles))%%2==0)]
+eqtl.fin[,"A2"] <- eqtl_alleles[-which(c(1:length(eqtl_alleles))%%2==0)]
 eqtl.fin[,"varID"] <- paste0(eqtl.fin[,"CHR"],":",eqtl.fin[,"BP"])
 eqtl.fin[,"CHR"] = as.numeric(eqtl.fin[,"CHR"])
 eqtl.fin[,"BP"] = as.numeric(eqtl.fin[,"BP"])
