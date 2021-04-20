@@ -3,7 +3,7 @@ rm(list=ls())
 
 ################## This code uses statistical colocalization to identify whether lead SNPs from GWAS summary statistics colocalize with cis-eQTL for a give gene. This gene could be TWAS-significant and have "LD contamination", i.e.expression predictor SNPs and GWAS causal SNPs are different but in LD. Here, we test whether GWAS significant variants in the gene have coloc P[H3]<0.5 and P[H4]>0.5  with corresponding eQTL SNPs (for a given tissue) implying the GWAS-significant variant and the eQTL are likely to correspond to the same signal. The software used for colocalization analysis is "coloc", which assumes a single causal variant in a locus. In case we find evidence for colocalization, we also run GCTA-COJO, which can condition variants mapping to the gene on the top eQTL-associated GWAS SNP. These conditional p-values are then fed into "coloc" to test for potential secondary signals.
 
-#### Yogasudha Veturi 12January2021
+#### Yogasudha Veturi 20Apr2021
 
 #############################################
 ## 1. Load necessary libraries
@@ -47,7 +47,7 @@ opts <- parse_args(OptionParser(option_list=opt_list))
 
 #2.1 parse values
 chr <- opts$chromosome
-if(is.numeric(chr)==FALSE) stop("Chromosome as integer (1 to 23) not specified")
+if(is.numeric(chr)==FALSE){if(grep("HSCHR",chr)==1) chr <- as.numeric(substr(chr,nchar("HSCHR")+1,nchar("HSCHR")+1)) else  stop("Chromosome as integer (1 to 23) not specified")}
 lead.snp.window.size <- opts$lead_snp_window_size
 gene.boundary.window.size <- opts$gene_boundary_window_size
 gwas.p.threshold <- opts$gwas_p_threshold
@@ -79,6 +79,7 @@ eqtl.file <- paste0(eqtl.folder,"/",tissue,".allpairs.chr",chr,".txt.gz")
 gwas <- as.data.frame(data.table::fread(gwas.file,header=T,stringsAsFactors=FALSE,sep="\t"))
 if (length(grep(paste0(c("variant_id","panel_variant_id","chromosome","position","effect_allele","non_effect_allele","frequency","zscore","effect_size","standard_error","pvalue","sample_size","n_cases"),collapse="|"),colnames(gwas),ignore.case=TRUE))<13) stop("Required columns are not present in the requested format in the GWAS dataset")
 colnames(gwas) = c("SNP","panel_variant_id","CHR","BP","A1","A2","A1FREQ","ZSCORE","BETA","SE","P","N","NCASES")
+if(gwas.response.type=="cc") gwas[,"BETA"] <- gwas[,"ZSCORE"]*gwas[,"SE"]
 gwas[,"CHR"] = substr(gwas[,"CHR"],4,nchar(gwas[,"CHR"]))
 gwas <- gwas[which(gwas[,"CHR"]==chr),]
 if(nrow(gwas)==0) stop("No SNPs in corresponding chromosome; check GWAS file and chromosome specification")
@@ -86,19 +87,28 @@ gwas <- gwas[order(gwas[,"BP"],decreasing=FALSE),]
 gwas[,"P"] <- as.numeric(gwas[,"P"])
 gwas[,"varID"] <- paste0(gwas[,"CHR"],":",gwas[,"BP"])
 gwas.fin <- gwas[which(gwas[,"P"]<gwas.p.threshold),]
-if(nrow(gwas.fin)==0) stop("No sig GWAS hits for given trait  in this chromosome")
+if(nrow(gwas.fin)==0) stop("No sig GWAS hits for given trait in this chromosome")
+message("GWAS loaded")
+
+if(run.cojo){
+  reference.files <- list.files(reference.folder)
+  reference.files <- reference.files[grep(paste0("[.]",chr,"[.]"),reference.files)]
+  reference.filename <- unique(substr(reference.files, 1, nchar(reference.files)-4))
+  reference.file.bim = reference.files[grep(".bim",reference.files)]
+  if(length(reference.file.bim)==0) stop("Reference filename is not in .chromosome.bim/bed/fam format")
+  if(length(reference.file.bim)>1) stop("More than one reference filename")
+  reference.snps <- as.data.frame(data.table::fread(paste0(reference.folder,"/",reference.file.bim),header=F,sep="\t"))
+  message("Reference data loaded")
+}
 
 genes.list <- as.data.frame(data.table::fread(genes.file,header=T,stringsAsFactors=FALSE,sep="\t"))
-eqtl <- as.data.frame(data.table::fread(eqtl.file,header=T,stringsAsFactors=FALSE))
-reference.files <- list.files(reference.folder)
-reference.files <- reference.files[grep(paste0("[.]",chr,"[.]"),reference.files)]
-reference.filename <- unique(substr(reference.files, 1, nchar(reference.files)-4))
-reference.file.bim = reference.files[grep(".bim",reference.files)]
-if(length(reference.file.bim)==0) stop("Reference filename is not in .chromosome.bim/bed/fam format")
-if(length(reference.file.bim)>1) stop("More than one reference filename")
-reference.snps <- as.data.frame(data.table::fread(paste0(reference.folder,"/",reference.file.bim),header=F,sep="\t"))
+message("Genes file loaded")
 genes.fin <- genes.list[which(genes.list[,"Gene_stable_ID"]==gene.of.interest),]
 if(nrow(genes.fin)==0) stop("Genes(s) of interest not in file")
+
+eqtl <- as.data.frame(data.table::fread(eqtl.file,header=T,stringsAsFactors=FALSE))
+message("eQTL data loaded")
+
 N.eqtl <- read.table(eqtl.sample.size.file,header=T,stringsAsFactors=FALSE)
 N.eqtl.tissue <- N.eqtl[which(N.eqtl[,1]==tissue),2]
 if(length(which(N.eqtl[,1]==tissue))!=1) stop("The eqtl sample size file does not contain the tissue of interest in column 1")
@@ -109,11 +119,12 @@ if(length(gene_fin)==0) stop("No genes specified")
 gene_name <- genes.fin[,"Gene_name"]
 message(tissue," / ", trait," / ",gwas.data.name," / ",gene_name," / ", gene_fin, " / chr=",chr)
 
+
 #############################################
 ## 3. Isolate relevant SNPs for analysis
 #############################################
 
-dir.create(paste0(output.folder,"/intermediate"), recursive=T)
+suppressWarnings(dir.create(paste0(output.folder,"/intermediate"), recursive=T))
 setwd(output.folder)
 
 #3.1 Get SNPs for GWAS dataset (p-value < chosen threshold) that lie within (default=1MB) of chosen gene boundaries
@@ -127,6 +138,7 @@ pos_gwas <- as.numeric(gwas.fin[match(snps_gwas,gwas.fin[,"varID"]),"BP"])
 
 snps_gwas2 <- NA
 tmp <- unique(snps_gwas[which(pos_gwas>=(genes.fin[1,"Gene_start_(bp)"]-gene.boundary.window.size)&pos_gwas<=(genes.fin[1,"Gene_end_(bp)"]+gene.boundary.window.size))])
+if(length(tmp)==0) {message("No GWAS 'lead' SNPs within specified boundaries of this gene");quit()}
 snps_gwas2 <- c(snps_gwas2,tmp)
 snps_gwas2 <-snps_gwas2[-1]
 lead_snps_gwas <- sort(unique(snps_gwas2))
@@ -141,8 +153,8 @@ if(length(unique(eqtl.fin[,"CHR"]))==0) stop("eQTL allpairs dataset does not cor
 eqtl_pos_alleles <- eqtl_chrpos_alleles[-grep("chr",eqtl_chrpos_alleles)]
 eqtl.fin[,"BP"] <- eqtl_pos_alleles[-grep("A|C|T|G|a|c|t|g",eqtl_pos_alleles)]
 eqtl_alleles <- eqtl_pos_alleles[grep("A|C|T|G|a|c|t|g",eqtl_pos_alleles)]
-eqtl.fin[,"A1"] <- eqtl_alleles[which(c(1:length(eqtl_alleles))%%2==0)]
-eqtl.fin[,"A2"] <- eqtl_alleles[-which(c(1:length(eqtl_alleles))%%2==0)]
+eqtl.fin[,"A1"] <- eqtl_alleles[-which(c(1:length(eqtl_alleles))%%2==0)]
+eqtl.fin[,"A2"] <- eqtl_alleles[which(c(1:length(eqtl_alleles))%%2==0)]
 eqtl.fin[,"varID"] <- paste0(eqtl.fin[,"CHR"],":",eqtl.fin[,"BP"])
 eqtl.fin[,"CHR"] = as.numeric(eqtl.fin[,"CHR"])
 eqtl.fin[,"BP"] = as.numeric(eqtl.fin[,"BP"])
@@ -152,7 +164,7 @@ lead_snps_eqtl <- eqtl.fin[which(eqtl.fin[,"pval_nominal"]<eqtl.p.threshold),"va
 
 common_lead_snps <- intersect(lead_snps_gwas,lead_snps_eqtl)
 #if(length(lead_snps)==0) stop("No lead SNPs at the chosen p-value thresholds")
-if(length(common_lead_snps)==0) message("No overlapping 'lead' SNPs between GWAS and eQTL (GTEXv8) datasets for given gene")
+if(length(common_lead_snps)==0) message(paste0("No GWAS 'lead' SNPs have p-value < specified threshold of ",eqtl.p.threshold," in the eQTL dataset"))
 
 ###3.3.1 Function to get lead SNPs at a distance of (default=100KB) from each other
 lead_snps <- lead_snps_gwas
@@ -174,7 +186,6 @@ getleadsnp.fn <- function(data,baseRow,jump=1) {
   }
   return(bottomRow)
 }
-
 if(length(lead_snps)>1){
   rows <- i <- 1
     while(i<=length(lead_snps)-1) {
@@ -206,12 +217,8 @@ if(length(lead_snps)>1){
   }
   lead_snps <- unique(snp2[-1])
 }
-
-###3.3.2 LD clump lead SNPs
-
-#  gwas.for.clump <- gwas.fin[which(gwas.fin[,"varID"]%in%lead_snps),]
-#  lead_snps <- invisible(clump_data(gwas.for.clump, clump_r2 = clump.r2))[,"varID"]
-
+if(length(lead_snps)==0) {message("No GWAS 'lead' SNPs within specified boundaries of this gene");quit()}
+message("Lead SNPs -> ",paste0(lead_snps,collapse=","))
 
 ########################################################################################################################
 ## 4. Loop over all lead SNPs and prepare datasets for coloc (and GCTA-COJO to identify secondary signals, if necessary)
@@ -276,6 +283,7 @@ for(j in 1:length(lead_snps)){ # Loop starts for lead snps
 
   base <- which(paste0(gwas[,"CHR"],":",gwas[,"BP"])==varid)[1]
   boundaryRows <- data.frame(getWindow.fn(baseRow=base,data=gwas,size=lead.snp.window.size,jump=100))  ## Get boundary rows for GWAS dataset; these will yield all the GWAS SNPs within chosen window size on either side of lead SNP
+  if(boundaryRows[[1]]<0) boundaryRows[[1]]=1
   x_gwas <- gwas[boundaryRows[[1]]:boundaryRows[[2]],]
   if(length(which(x_gwas[,"A1FREQ"]%in%c(0,1,NA)))>0) x_gwas <- x_gwas[-which(x_gwas[,"A1FREQ"]%in%c(0,1,NA)),]
   snp <- x_gwas[which(paste0(x_gwas[,"CHR"],":",x_gwas[,"BP"])==varid),"SNP"]
@@ -287,6 +295,8 @@ for(j in 1:length(lead_snps)){ # Loop starts for lead snps
   num.snps <- nrow(x_gwas)
 
   eqtl.fin2 <- eqtl.fin[which(eqtl.fin[,"BP"]>gwas[boundaryRows[[1]],"BP"]&eqtl.fin[,"BP"]<=gwas[boundaryRows[[2]],"BP"]),]
+  if(nrow(eqtl.fin2)==0) { message("\ntissue=",tissue," / lead.snp.num=",j," / lead.snp=",varid," / " ,trait," / ",gwas.data.name," / num.lead.snps=",length(lead_snps)," / gene=",gene_name, "\n")
+     message("No variants within specified boundaries of lead SNP in the eQTL dataset");next}
 
   x_eqtl <- cbind(eqtl.fin[which(eqtl.fin[,"varID"]%in%x_gwas[,"varID"]),],"N"=N.eqtl.tissue)
   if(length(which(x_eqtl[,"maf"]==0))>0) x_eqtl <- x_eqtl[-which(x_eqtl[,"maf"]==0),]
@@ -314,7 +324,19 @@ for(j in 1:length(lead_snps)){ # Loop starts for lead snps
   ##########################################################################################
   ## 5. Run colocalization analysis between GWAS and eQTL datasets (identify primary signal)
   ##########################################################################################
-  #5.1 Prepare eQTL and GWAS datasets for colocalization analysis 
+
+  #5.1 Get topsnp for eQTL data
+
+  #coloc_topsnps <- coloc_data[which(coloc_data[,"gwas.p"]<gwas.p.threshold&coloc_data[,"eqtl.p"]<eqtl.p.threshold),]
+  eqtl_ordered <- eqtl.coloc[order(eqtl.coloc[,"p"],decreasing=FALSE),]
+  eqtl_ordered2 <- eqtl_ordered[which(eqtl_ordered[,"p"]<eqtl.p.threshold),]
+  if(nrow(eqtl_ordered2)>0) eqtl_topsnps <- eqtl_ordered2[,"SNP"]
+  region = paste0(gwas[boundaryRows[[1]],"BP"],":",gwas[boundaryRows[[2]],"BP"])
+  eqtl_topsnp <- eqtl.coloc[which(eqtl.coloc[,"p"]==min(eqtl.coloc[,"p"],na.rm=T)),"SNP"][1]
+
+  message("\ntissue=",tissue," / lead.snp.num=",j," / lead.snp=",varid," / eqtl_topsnp=", eqtl_topsnp," / " ,trait," / ",gwas.data.name," / num.lead.snps=",length(lead_snps)," / gene=",gene_name," / Region=",region, "\n")
+
+  #5.2 Prepare eQTL and GWAS datasets for colocalization analysis 
 
   if(nrow(eqtl.coloc)>0){
     if(gwas.response.type=="quant") {
@@ -339,119 +361,9 @@ for(j in 1:length(lead_snps)){ # Loop starts for lead snps
   if(coloc$value[[1]][[5]]<0.5&coloc$value[[1]][[6]]>0.2&coloc$value[[1]][[6]]<=0.5) message("\nModerate support (primary signal) for colocalization in this region.")
   if(coloc$value[[1]][[5]]>0.5) message("\nEvidence of LD contamination found in this region.")
 
-  ###################################################################################################
-  ## 6. Condition SNPs on the top eQTL-associated SNP using GCTA-COJO and check for secondary signals
-  ###################################################################################################
-
-  #6.1 Get topsnp for eQTL data
-
-  #coloc_topsnps <- coloc_data[which(coloc_data[,"gwas.p"]<gwas.p.threshold&coloc_data[,"eqtl.p"]<eqtl.p.threshold),]
-  eqtl_topsnp <- eqtl.fin2[which(eqtl.fin2[,"pval_nominal"]==min(eqtl.fin2[,"pval_nominal"])),"varID"][1]
-
-  #6.2 Run next part if run.cojo=TRUE
-
-  if(run.cojo){
-    if(eqtl.fin2[which(eqtl.fin2[,"varID"]==eqtl_topsnp),"pval_nominal"]<=eqtl.p.threshold) {use.conditional.probs <- TRUE;message(paste0("eQTL top SNP has a p-value<=",eqtl.p.threshold,"; proceeding with search for secondary signals\n"))} else {message(paste0("eQTL top SNP has a p-value>",eqtl.p.threshold,"; halting search for secondary signals\n"));use.conditional.probs <- FALSE}
-
-    if(use.conditional.probs){
-
-      gwas.matched.ref <- match(x_gwas[,"varID"],paste0(reference.snps[,1],":",reference.snps[,4]))
-      eqtl.matched.ref <- match(x_eqtl[,"varID"],paste0(reference.snps[,1],":",reference.snps[,4]))
-
-      x_gwas.bp <- reference.snps[gwas.matched.ref,4]
-      x_gwas["varID"] <- paste0(chr,":",x_gwas.bp)
-      x_gwas["SNP"] <- reference.snps[gwas.matched.ref,2]
-      x_gwas_gcta <- x_gwas[,c("SNP","A1","A2","A1FREQ","BETA","SE","P","N")]
-      if(length(which(is.na(x_gwas_gcta[,"SNP"])))>0) x_gwas_gcta <- x_gwas_gcta[-which(is.na(x_gwas_gcta[,"SNP"])),]
-      x_eqtl <- cbind("SNP"=reference.snps[eqtl.matched.ref,2],x_eqtl[,-1])
-      x_eqtl_gcta <- cbind(x_eqtl[match(x_gwas_gcta[,"SNP"],x_eqtl[,"SNP"]),c("SNP","A1","A2","maf","slope","slope_se","pval_nominal")],"N"=N.eqtl.tissue)
-      if(nrow(x_eqtl_gcta)==0) {message("tissue=",tissue," / j=",j," / ",trait," / ",gwas.data.name,"  / num.lead.snps=",length(lead_snps)) ; next}
-      eqtl_topsnp2 <- reference.snps[which(paste0(reference.snps[,1],":",reference.snps[,4])==eqtl_topsnp),2]
-      write.table(eqtl_topsnp2,file=paste0("intermediate/",trait,"_",gwas.data.name,"_chr",chr,"_pos_",pos,"_",gene_name,"_",tissue,"_topsnp.txt"),row.names=F,col.names=T,quote=F,sep="\t")
-      if(length(eqtl_topsnp2)==0) {
-        print("eQTL top SNP does not have a match in the reference dataset: Are reference and eQTL data on the same build?"); next}
-     eqtl_topsnp_full = eqtl.fin2[which(eqtl.fin2[,"varID"]==eqtl_topsnp),]
-      x_eqtl_gcta = unique(rbind(x_eqtl_gcta,cbind("SNP"=eqtl_topsnp2, eqtl_topsnp_full[,c("A1","A2","maf","slope","slope_se","pval_nominal")],"N"=N.eqtl.tissue)))
-      write.table(x_eqtl_gcta,file=paste0("intermediate/eQTL_",tissue,"_chr",chr,"_pos_",pos,"_",gene_name,".txt"),row.names=F,col.names=T,quote=F,sep="\t")
-
-      gwas_topsnp_full = gwas.fin[which(gwas.fin[,"varID"]==eqtl_topsnp),]
-      if(nrow(gwas_topsnp_full)>0)
-      {
-        x_gwas_gcta = unique(rbind(x_gwas_gcta,cbind("SNP"=eqtl_topsnp2, gwas_topsnp_full[,c("A1","A2","A1FREQ","BETA","SE","P","N")])))
-        if(x_gwas_gcta[which(x_gwas_gcta[,"SNP"]==eqtl_topsnp2),"P"]<gwas.p.threshold){
-          write.table(x_gwas_gcta,file=paste0("intermediate/GWAS_",trait,"_",gwas.data.name,"_chr",chr,"_pos_",pos,"_",gene_name,".txt"),row.names=F,col.names=T,quote=F,sep="\t")
-
-          #6.3 Run GCTA-COJO to perform association analysis of all the included SNPs conditional on the given top SNP in the GWAS dataset. Results are saved in the .cma.cojo file
-
-          invisible(system(paste0("module load gcta ;gcta64 --bfile ",reference.folder,"/",reference.filename," --chr ",chr," --maf ",cojo.maf," --cojo-file intermediate/GWAS_",trait,"_",gwas.data.name,"_chr",chr,"_pos_",pos,"_",gene_name,".txt --cojo-cond intermediate/",trait,"_",gwas.data.name,"_chr",chr,"_pos_",pos,"_",gene_name,"_",tissue,"_topsnp.txt --out intermediate/GWAS_",trait,"_",gwas.data.name,"_chr_",chr,"_pos_",pos,"_",gene_name,"_conditionalP"),intern=TRUE))
-          tmp.1 <- tryCatch.W.E(read.table(paste0("intermediate/GWAS_",trait,"_",gwas.data.name,"_chr_",chr,"_pos_",pos,"_",gene_name,"_conditionalP.cma.cojo"),header=T))
-          warn.1 <- inherits(tmp.1$warning,"warning")
-          error.1 <- inherits(tmp.1$value,"error")
-          if(error.1==FALSE&length(which(is.na(tmp.1$value[,"pC"])))==0){
-            gwas.coloc <- tmp.1$value
-            gwas.coloc[,"SNP"] <- paste0(gwas.coloc[,"Chr"],":",gwas.coloc[,"bp"])
-            gwas.coloc <- gwas.coloc[,c("Chr","SNP","bp","refA","freq","bC","bC_se","pC","n")]
-            colnames(gwas.coloc) <- c("Chr","SNP","bp","refA","freq","b","se","p","n")
-          }
-        }
-      }
-      #6.4 Run GCTA-COJO to perform association analysis of all the included SNPs conditional on the given top SNP in the eQTL dataset. Results are saved in the .cma.cojo file
-
-      invisible(system(paste0("module load gcta ;gcta64 --bfile ",reference.folder,"/",reference.filename," --chr ",chr," --maf ",cojo.maf," --cojo-file intermediate/eQTL_",tissue,"_chr",chr,"_pos_",pos,"_",gene_name,".txt --cojo-cond intermediate/",trait,"_",gwas.data.name,"_chr",chr,"_pos_",pos,"_",gene_name,"_",tissue,"_topsnp.txt --out intermediate/",tissue,"_chr_",chr,"_pos_",pos,"_",gene_name,"_conditionalP"),intern=TRUE))
-      tmp.2 <-  tryCatch.W.E(read.table(paste0("intermediate/",tissue,"_chr_",chr,"_pos_",pos,"_",gene_name,"_conditionalP.cma.cojo"),header=T))
-      warn.2 <- inherits(tmp.2$warning,"warning")
-      error.2 <- inherits(tmp.2$value,"error")
-      if(error.2==FALSE&length(which(is.na(tmp.2$value[,"pC"])))==0){
-        eqtl.coloc <- tmp.2$value
-        eqtl.coloc[,"SNP"] <- paste0(eqtl.coloc[,"Chr"],":",eqtl.coloc[,"bp"])
-        eqtl.coloc <- eqtl.coloc[,c("Chr","SNP","bp","refA","freq","bC","bC_se","pC","n")]
-        colnames(eqtl.coloc) <- c("Chr","SNP","bp","refA","freq","b","se","p","n")
-     }
-
-      if(exists("error.1")) {if(error.1==FALSE&error.2==FALSE) proceed.for.coloc="TRUE"}
-      if(exists("error.1")==FALSE&error.2==FALSE) proceed.for.coloc="TRUE"
-      if(proceed.for.coloc) {
-        eqtl.coloc <- eqtl.coloc[which(eqtl.coloc[,"SNP"]%in%gwas.coloc[,"SNP"]),]
-        gwas.coloc <- gwas.coloc[which(gwas.coloc[,"SNP"]%in%eqtl.coloc[,"SNP"]),]
-        gwas.coloc <- gwas.coloc[match(eqtl.coloc[,"SNP"],gwas.coloc[,"SNP"]),]
-        if(length(which(is.na(gwas.coloc[,"SNP"])))>0) gwas.coloc = gwas.coloc[-which(is.na(gwas.coloc[,"SNP"])),]
-        eqtl.coloc <- eqtl.coloc[match(gwas.coloc[,"SNP"],eqtl.coloc[,"SNP"]),]
-        if(length(which(is.na(eqtl.coloc[,"SNP"])))>0) eqtl.coloc = eqtl.coloc[-which(is.na(eqtl.coloc[,"SNP"])),]
-        stopifnot(all.equal(as.character(unlist(eqtl.coloc[,"SNP"])),as.character(unlist(gwas.coloc[,"SNP"]))))
-        
-        eqtl.coloc$maf <- ifelse(eqtl.coloc[,"freq"]<0.5,eqtl.coloc[,"freq"],1-eqtl.coloc[,"freq"])
-        gwas.coloc$maf <- ifelse(gwas.coloc[,"freq"]<0.5,gwas.coloc[,"freq"],1-gwas.coloc[,"freq"])
-        if(gwas.response.type=="cc") {
-          ncases <- gwas[match(gwas.coloc[,"SNP"],gwas[,"SNP"]),"NCASES"]
-          gwas.coloc$s <- ncases/gwas.coloc[,"n"]
-        }
-
-      #6.5 Prepare eQTL and GWAS datasets for colocalization analysis between GWAS and eQTL datasets using conditional probabilites from GCTA-COJO 
-        if(gwas.response.type=="quant"){
-          coloc_data2 <- data.frame("gwas"=gwas.coloc[,c("SNP","maf","p","n","b","se")],"eqtl"=eqtl.coloc[,c("SNP","maf","p","n","b","se")])
-          colnames(coloc_data2) = c("gwas.SNP","gwas.maf","gwas.p","gwas.n","gwas.b","gwas.se","eqtl.SNP","eqtl.maf","eqtl.p","eqtl.n","eqtl.b","eqtl.se")
-          if(length(which(is.na(coloc_data2[,"eqtl.p"])|is.na(coloc_data2[,"gwas.p"])))>0) coloc_data2 <- coloc_data2[-which(is.na(coloc_data2[,"eqtl.p"])|is.na(coloc_data2[,"gwas.p"])),]
-          coloc2 <- tryCatch.W.E(coloc.abf(dataset1=list(pvalues=coloc_data2[,"gwas.p"], N=round(median(coloc_data2[,"gwas.n"]),digits=0), MAF=coloc_data2[,"gwas.maf"],type=gwas.response.type), dataset2=list(pvalues=coloc_data2[,"eqtl.p"], N=median(coloc_data2[,"eqtl.n"]), type="quant",MAF=coloc_data2[,"gwas.maf"]),p1=coloc.p1,p2=coloc.p2,p12=coloc.p12)$summary)
-        }
-        if(gwas.response.type=="cc") {
-          coloc_data2 <- data.frame("gwas"=gwas.coloc[,c("SNP","maf","p","n","b","se","s")],"eqtl"=eqtl.coloc[,c("SNP","maf","p","n","b","se")])
-          colnames(coloc_data2) = c("gwas.SNP","gwas.maf","gwas.p","gwas.n","gwas.b","gwas.se","gwas.s","eqtl.SNP","eqtl.maf","eqtl.p","eqtl.n","eqtl.b","eqtl.se")
-          if(length(which(is.na(coloc_data2[,"eqtl.p"])|is.na(coloc_data2[,"gwas.p"])))>0) coloc_data2 <- coloc_data2[-which(is.na(coloc_data2[,"eqtl.p"])|is.na(coloc_data2[,"gwas.p"])),]
-          coloc2 <- tryCatch.W.E(coloc.abf(dataset1=list(pvalues=coloc_data2[,"gwas.p"], N=round(median(coloc_data2[,"gwas.n"]),digits=0), MAF=coloc_data2[,"gwas.maf"],s=coloc_data2[,"gwas.s"],type=gwas.response.type), dataset2=list(pvalues=coloc_data2[,"eqtl.p"], N=median(coloc_data2[,"eqtl.n"]), type="quant",MAF=coloc_data2[,"gwas.maf"]),p1=coloc.p1,p2=coloc.p2,p12=coloc.p12)$summary)
-        }
-        warn2 <- inherits(coloc2$warning,"warning")
-        error2 <- inherits(coloc2$value,"error")
-        if(coloc2$value[[6]]<0.2 | coloc2$value[[5]]>0.5) message("\nNo support for secondary signals in this region.\n")
-        if(coloc2$value[[5]]<0.5&coloc2$value[[6]]>0.25&coloc2$value[[6]]<=0.5) {message("\nModerate support for secondary signals in this region!\n")}
-        if(coloc2$value[[5]]<0.5&coloc2$value[[6]]>0.5&coloc2$value[[6]]<=0.75) {message("\nGood support for secondary signals in this region!\n")}
-        if(coloc2$value[[5]]<0.5&coloc2$value[[6]]>0.75) {message("\nStrong support for secondary signals in this region!\n")}
-      }
-    }
-  }
   ############################
-  ## 7. Prepare output dataset
+  ## 6. Prepare output dataset
   ############################
-  region = paste0(gwas[boundaryRows[[1]],"BP"],":",gwas[boundaryRows[[2]],"BP"])
   coloc_probs[,"GWAS.Lead.SNP"] <- snp
   coloc_probs[,"Trait"] <- trait
   coloc_probs[,"Tissue"] <- tissue
@@ -468,7 +380,7 @@ for(j in 1:length(lead_snps)){ # Loop starts for lead snps
   coloc_probs[,"ENSG_gene"] <- gene_fin
   coloc_probs[,"Gene"] <- gene_name
   coloc_probs[,"TopSNP_eQTL"] <- eqtl_topsnp
-  coloc_probs[,"Best.Causal.SNP"] <- best.causal.snp
+  coloc_probs[,"Best.Causal.SNP"] <- best.causal.snp[1]
   coloc_probs[,"eQTL.Beta"] <- x_eqtl[which(x_eqtl[,"varID"]==varid),"slope"][1]
   coloc_probs[,"eQTL.SE"] <- x_eqtl[which(x_eqtl[,"varID"]==varid),"slope_se"][1]
   coloc_probs[,"eQTL.P"] <- x_eqtl[which(x_eqtl[,"varID"]==varid),"pval_nominal"][1]
@@ -484,9 +396,137 @@ for(j in 1:length(lead_snps)){ # Loop starts for lead snps
   coloc_probs[,"Gene.Start"] <- genes.fin[which(genes.fin[,"Gene_stable_ID"]==gene_fin),"Gene_start_(bp)"]
   coloc_probs[,"Gene.End"] <- genes.fin[which(genes.fin[,"Gene_stable_ID"]==gene_fin),"Gene_end_(bp)"]
 
+
   if(error==FALSE){
     coloc_probs[,"Coloc.Ratio"] = signif(coloc$value[[1]]["PP.H4.abf"]/(coloc$value[[1]]["PP.H3.abf"]+coloc$value[[1]]["PP.H4.abf"]),digits=4)
     coloc_probs[,c("Coloc.H0","Coloc.H1","Coloc.H2","Coloc.H3","Coloc.H4")] = signif(coloc$value[[1]][-1],digits=4)
+  }
+
+
+  ###################################################################################################
+  ## 7. Condition SNPs on the top eQTL-associated SNP using GCTA-COJO and check for secondary signals
+  ###################################################################################################
+
+  #7.1 Run next part if run.cojo=TRUE
+
+  if(run.cojo){
+    if(eqtl.coloc[which(eqtl.coloc[,"SNP"]==eqtl_topsnp),"p"]<=eqtl.p.threshold) {use.conditional.probs <- TRUE;message(paste0("\neQTL top SNP has a p-value<=",eqtl.p.threshold,"; proceeding with search for secondary signals\n"))} else {message(paste0("\neQTL top SNP has a p-value>",eqtl.p.threshold,"; halting search for secondary signals\n"));use.conditional.probs <- FALSE}
+
+    if(use.conditional.probs){
+      ref.common.varid = intersect(coloc_data[,"gwas.SNP"],paste0(reference.snps[,1],":",reference.snps[,4]))
+      if(length(which(is.na(ref.common.varid)))==nrow(x_eqtl)) {next; message("No SNPs matching between reference and eQTL datasets; are reference and eQTL data on the same genome build?")}
+
+      x_gwas_gcta <- x_gwas[which(x_gwas[,"varID"]%in%ref.common.varid),c("A1","A2","A1FREQ","BETA","SE","P","N","varID")]
+      x_gwas_gcta.SNP <- reference.snps[match(x_gwas_gcta[,"varID"],paste0(reference.snps[,1],":",reference.snps[,4])),2]
+      x_gwas_gcta <- cbind("SNP"=x_gwas_gcta.SNP,x_gwas_gcta)
+      if(length(which(is.na(x_gwas_gcta[,"SNP"])))>0) x_gwas_gcta <- x_gwas_gcta[-which(is.na(x_gwas_gcta[,"SNP"])),]
+
+      x_eqtl_gcta <- cbind(x_eqtl[which(x_eqtl[,"varID"]%in%ref.common.varid),c("A1","A2","maf","slope","slope_se","pval_nominal")],"N"=N.eqtl.tissue,"varID"=x_eqtl[which(x_eqtl[,"varID"]%in%ref.common.varid),"varID"])
+      x_eqtl_gcta.SNP <- reference.snps[match(x_eqtl_gcta[,"varID"],paste0(reference.snps[,1],":",reference.snps[,4])),2]
+      x_eqtl_gcta <- cbind("SNP"=x_eqtl_gcta.SNP,x_eqtl_gcta)
+      if(length(which(duplicated(as.character(unlist(x_eqtl_gcta[,"SNP"])))))>0) x_eqtl_gcta[which(duplicated(x_eqtl_gcta[,"SNP"])&(nchar(x_eqtl_gcta[,"A1"])>0|nchar(x_eqtl_gcta[,"A2"])>0)),] <- NA
+      if(length(which(is.na(x_eqtl_gcta[,"SNP"])))>0) x_eqtl_gcta <- x_eqtl_gcta[-which(is.na(x_eqtl_gcta[,"SNP"])),]
+
+      stopifnot(all.equal(as.character(unlist(x_gwas_gcta[,"SNP"])),as.character(unlist(x_eqtl_gcta["SNP"]))))
+
+      coloc_gcta <- data.frame("gwas"=x_gwas_gcta[,c("SNP","P","varID")],"eqtl"=x_eqtl_gcta[,c("SNP","pval_nominal","varID")])
+      if(nrow(coloc_gcta)==0) {message("tissue=",tissue," / j=",j," / ",trait," / ",gwas.data.name,"  / num.lead.snps=",length(lead_snps))
+        write.table(coloc_probs, file=paste0("chr",chr,"_",gwas.data.name,"_",trait,"_",tissue,"_",gene_name,"_colocProbs.txt"),row.names=F,col.names=F,quote=F,sep="\t",append=T);
+        message("\nNo SNPs matching between GWAS and eQTL datasets; halting search for secondary signals in this region.\n")
+        next}
+
+      eqtl_topsnps2 <-  x_eqtl_gcta[which(x_eqtl_gcta[,"varID"]%in%eqtl_topsnps),"varID"]
+      if(length(eqtl_topsnps2)==0) {
+        write.table(coloc_probs, file=paste0("chr",chr,"_",gwas.data.name,"_",trait,"_",tissue,"_",gene_name,"_colocProbs.txt"),row.names=F,col.names=F,quote=F,sep="\t",append=T)
+        message("\neQTL top SNPs do not have a match in the reference dataset; halting search for secondary signals in this region.\n")
+        next
+      }
+      coloc_topsnps <- coloc_gcta[which(coloc_gcta[,"gwas.P"]<gwas.p.threshold&coloc_gcta[,"eqtl.pval_nominal"]<eqtl.p.threshold),]
+
+      if(coloc$value[[1]][[5]]<0.5&coloc$value[[1]][[6]]>0.5) {
+         if(nrow(coloc_topsnps)>0) {eqtl_topsnp2 <- coloc_topsnps[which(coloc_topsnps[,"eqtl.pval_nominal"]==min(coloc_topsnps[,"eqtl.pval_nominal"])),"gwas.SNP"][1]
+           } else eqtl_topsnp2 <- as.character(unlist(x_eqtl_gcta[which(x_eqtl_gcta[,"pval_nominal"]==min(x_eqtl_gcta[,"pval_nominal"],na.rm=T)),"SNP"][1]))
+      } else eqtl_topsnp2 <- as.character(unlist(x_eqtl_gcta[which(x_eqtl_gcta[,"pval_nominal"]==min(x_eqtl_gcta[,"pval_nominal"],na.rm=T)),"SNP"][1]))
+
+      write.table(eqtl_topsnp2,file=paste0("intermediate/",trait,"_",gwas.data.name,"_chr",chr,"_pos_",pos,"_",gene_name,"_",tissue,"_topsnp.txt"),row.names=F,col.names=T,quote=F,sep="\t")
+      write.table(x_eqtl_gcta,file=paste0("intermediate/eQTL_",tissue,"_chr",chr,"_pos_",pos,"_",gene_name,".txt"),row.names=F,col.names=T,quote=F,sep="\t")
+      write.table(x_gwas_gcta,file=paste0("intermediate/GWAS_",trait,"_",gwas.data.name,"_chr",chr,"_pos_",pos,"_",gene_name,".txt"),row.names=F,col.names=T,quote=F,sep="\t")
+
+      if(coloc$value[[1]][[5]]<0.5&coloc$value[[1]][[6]]>0.5&nrow(coloc_topsnps)>0)
+      {
+      #7.1 Run GCTA-COJO to perform association analysis of all the included SNPs conditional on the given top SNP in the GWAS dataset. Results are saved in the .cma.cojo file
+         suppressWarnings(invisible(system(paste0("module load gcta/1.26 ;gcta64 --bfile ",reference.folder,"/",reference.filename," --chr ",chr," --maf ",cojo.maf," --cojo-file intermediate/GWAS_",trait,"_",gwas.data.name,"_chr",chr,"_pos_",pos,"_",gene_name,".txt --cojo-cond intermediate/",trait,"_",gwas.data.name,"_chr",chr,"_pos_",pos,"_",gene_name,"_",tissue,"_topsnp.txt --out intermediate/GWAS_",trait,"_",gwas.data.name,"_chr_",chr,"_pos_",pos,"_",gene_name,"_conditionalP"),intern=TRUE)))
+         tmp.1 <- tryCatch.W.E(read.table(paste0("intermediate/GWAS_",trait,"_",gwas.data.name,"_chr_",chr,"_pos_",pos,"_",gene_name,"_conditionalP.cma.cojo"),header=T))
+         warn.1 <- inherits(tmp.1$warning,"warning")
+         error.1 <- inherits(tmp.1$value,"error")
+         if(error.1) tmp.1pC <- NA else tmp.1pC <- tmp.1$value[,"pC"]
+         if(error.1==FALSE&warn.1==FALSE&length(which(!is.na(tmp.1pC)))==0){
+            gwas.coloc <- tmp.1$value
+            gwas.coloc[,"SNP"] <- paste0(gwas.coloc[,"Chr"],":",gwas.coloc[,"bp"])
+            gwas.coloc <- gwas.coloc[,c("Chr","SNP","bp","refA","freq","bC","bC_se","pC","n")]
+            colnames(gwas.coloc) <- c("Chr","SNP","bp","refA","freq","b","se","p","n")
+       }
+     }
+
+      #7.2 Run GCTA-COJO to perform association analysis of all the included SNPs conditional on the given top SNP in the eQTL dataset. Results are saved in the .cma.cojo file
+
+      suppressWarnings(invisible(system(paste0("module load gcta/1.26 ;gcta64 --bfile ",reference.folder,"/",reference.filename," --chr ",chr," --maf ",cojo.maf," --cojo-file intermediate/eQTL_",tissue,"_chr",chr,"_pos_",pos,"_",gene_name,".txt --cojo-cond intermediate/",trait,"_",gwas.data.name,"_chr",chr,"_pos_",pos,"_",gene_name,"_",tissue,"_topsnp.txt --out intermediate/",tissue,"_chr_",chr,"_pos_",pos,"_",gene_name,"_conditionalP"),intern=TRUE)))
+      tmp.2 <-  tryCatch.W.E(read.table(paste0("intermediate/",tissue,"_chr_",chr,"_pos_",pos,"_",gene_name,"_conditionalP.cma.cojo"),header=T))
+      warn.2 <- inherits(tmp.2$warning,"warning")
+      error.2 <- inherits(tmp.2$value,"error")
+      if(error.2) tmp.2pC <- NA else tmp.2pC <- tmp.2$value[,"pC"]
+      if(error.2==FALSE&warn.2==FALSE&length(which(!is.na(tmp.2pC)))>0){
+        eqtl.coloc2 <- tmp.2$value
+        eqtl.coloc2[,"SNP"] <- paste0(eqtl.coloc2[,"Chr"],":",eqtl.coloc2[,"bp"])
+        eqtl.coloc2 <- eqtl.coloc2[,c("Chr","SNP","bp","refA","freq","bC","bC_se","pC","n")]
+        colnames(eqtl.coloc2) <- c("Chr","SNP","bp","refA","freq","b","se","p","n")
+      }
+      if(error.2) { badsnps = read.table(paste0("intermediate/",tissue,"_chr_",chr,"_pos_",pos,"_",gene_name,"_conditionalP.freq.badsnps"),header=T)
+        eqtl_topsnps3 = eqtl_topsnps2[-which(eqtl_topsnps2%in%badsnps[,"SNP"])]
+        if(length(eqtl_topsnps3)==0) {write.table(coloc_probs, file=paste0("chr",chr,"_",gwas.data.name,"_",trait,"_",tissue,"_",gene_name,"_colocProbs.txt"),row.names=F,col.names=F,quote=F,sep="\t",append=T);message("\nCOJO error (check .badnsps file for large allele frequency difference between GTEx and reference data).\n");next}
+     }
+      if(exists("error.1")) {if(error.1==FALSE&error.2==FALSE) proceed.for.coloc="TRUE"}
+      #if(exists("error.1")) {if(error.1==FALSE&error.2==TRUE){if(error.3==FALSE) proceed.for.coloc="TRUE"}}
+      if(exists("error.1")==FALSE&error.2==FALSE) proceed.for.coloc="TRUE"
+      #if(exists("error.1")==FALSE&error.2==TRUE){if(error.3==FALSE) proceed.for.coloc="TRUE"}
+
+      if(proceed.for.coloc) {
+        eqtl.coloc2 <- eqtl.coloc2[which(eqtl.coloc2[,"SNP"]%in%gwas.coloc[,"SNP"]),]
+        gwas.coloc2 <- gwas.coloc[which(gwas.coloc[,"SNP"]%in%eqtl.coloc2[,"SNP"]),]
+        gwas.coloc2 <- gwas.coloc2[match(eqtl.coloc2[,"SNP"],gwas.coloc2[,"SNP"]),]
+        if(length(which(is.na(gwas.coloc2[,"p"])))>0|length(which(is.na(eqtl.coloc2[,"p"])))>0) {
+          which.na <- unique(c(which(is.na(gwas.coloc2[,"p"])),which(is.na(eqtl.coloc2[,"p"]))))
+          gwas.coloc2 <- gwas.coloc2[-which.na,]
+          eqtl.coloc2 <- eqtl.coloc2[-which.na,]
+        }
+        eqtl.coloc2 <- eqtl.coloc2[match(gwas.coloc2[,"SNP"],eqtl.coloc2[,"SNP"]),]
+        stopifnot(all.equal(as.character(unlist(eqtl.coloc2[,"SNP"])),as.character(unlist(gwas.coloc2[,"SNP"]))))
+
+        eqtl.coloc2$maf <- ifelse(eqtl.coloc2[,"freq"]<0.5,eqtl.coloc2[,"freq"],1-eqtl.coloc2[,"freq"])
+        gwas.coloc2$maf <- ifelse(gwas.coloc2[,"freq"]<0.5,gwas.coloc2[,"freq"],1-gwas.coloc2[,"freq"])
+
+      #7.3 Prepare eQTL and GWAS datasets for colocalization analysis between GWAS and eQTL datasets using conditional probabilites from GCTA-COJO 
+        if(gwas.response.type=="quant"){
+          coloc_data2 <- data.frame("gwas"=gwas.coloc2[,c("SNP","maf","p","n","b","se")],"eqtl"=eqtl.coloc2[,c("SNP","maf","p","n","b","se")])
+          colnames(coloc_data2) = c("gwas.SNP","gwas.maf","gwas.p","gwas.n","gwas.b","gwas.se","eqtl.SNP","eqtl.maf","eqtl.p","eqtl.n","eqtl.b","eqtl.se")
+          if(length(which(is.na(coloc_data2[,"eqtl.p"])|is.na(coloc_data2[,"gwas.p"])))>0) coloc_data2 <- coloc_data2[-which(is.na(coloc_data2[,"eqtl.p"])|is.na(coloc_data2[,"gwas.p"])),]
+          coloc2 <- tryCatch.W.E(coloc.abf(dataset1=list(pvalues=coloc_data2[,"gwas.p"], N=round(median(coloc_data2[,"gwas.n"]),digits=0), MAF=coloc_data2[,"gwas.maf"],type=gwas.response.type), dataset2=list(pvalues=coloc_data2[,"eqtl.p"], N=median(coloc_data2[,"eqtl.n"]), type="quant",MAF=coloc_data2[,"gwas.maf"]),p1=coloc.p1,p2=coloc.p2,p12=coloc.p12)$summary)
+        }
+        if(gwas.response.type=="cc") {
+          coloc_data2 <- data.frame("gwas"=gwas.coloc2[,c("SNP","maf","p","n","b","se","s")],"eqtl"=eqtl.coloc2[,c("SNP","maf","p","n","b","se")])
+          colnames(coloc_data2) = c("gwas.SNP","gwas.maf","gwas.p","gwas.n","gwas.b","gwas.se","gwas.s","eqtl.SNP","eqtl.maf","eqtl.p","eqtl.n","eqtl.b","eqtl.se")
+          if(length(which(is.na(coloc_data2[,"eqtl.p"])|is.na(coloc_data2[,"gwas.p"])))>0) coloc_data2 <- coloc_data2[-which(is.na(coloc_data2[,"eqtl.p"])|is.na(coloc_data2[,"gwas.p"])),]
+          coloc2 <- tryCatch.W.E(coloc.abf(dataset1=list(pvalues=coloc_data2[,"gwas.p"], N=round(median(coloc_data2[,"gwas.n"]),digits=0), MAF=coloc_data2[,"gwas.maf"],s=coloc_data2[,"gwas.s"],type=gwas.response.type), dataset2=list(pvalues=coloc_data2[,"eqtl.p"], N=median(coloc_data2[,"eqtl.n"]), type="quant",MAF=coloc_data2[,"gwas.maf"]),p1=coloc.p1,p2=coloc.p2,p12=coloc.p12)$summary)
+        }
+        warn2 <- inherits(coloc2$warning,"warning")
+        error2 <- inherits(coloc2$value,"error")
+
+        if(coloc2$value[[6]]<0.2 | coloc2$value[[5]]>0.5) message("\nNo support for secondary signals in this region.\n")
+        if(coloc2$value[[5]]<0.5&coloc2$value[[6]]>0.25&coloc2$value[[6]]<=0.5) {message("\nModerate support for secondary signals in this region!\n")}
+        if(coloc2$value[[5]]<0.5&coloc2$value[[6]]>0.5&coloc2$value[[6]]<=0.75) {message("\nGood support for secondary signals in this region!\n")}
+        if(coloc2$value[[5]]<0.5&coloc2$value[[6]]>0.75) {message("\nStrong support for secondary signals in this region!\n")}
+      }
+    }
   }
 
   if(run.cojo){
@@ -495,11 +535,10 @@ for(j in 1:length(lead_snps)){ # Loop starts for lead snps
         if(error2==FALSE){
           coloc_probs[,"Coloc2.Ratio"] = signif(coloc2$value["PP.H4.abf"]/(coloc2$value["PP.H3.abf"]+coloc2$value["PP.H4.abf"]),digits=4)
           coloc_probs[,c("Coloc2.H0","Coloc2.H1","Coloc2.H2","Coloc2.H3","Coloc2.H4")] = signif(coloc2$value[-1],digits=4)
-          rm(error2, gwas.coloc,eqtl.coloc)
+          rm(error2, gwas.coloc,eqtl.coloc,gwas.coloc2,eqtl.coloc2)
         }
      }
   }
-  message("\ntissue=",tissue," / lead.snp.num=",j," / lead.snp=",varid," / eqtl_topsnp=", eqtl_topsnp," / " ,trait," / ",gwas.data.name," / num.lead.snps=",length(lead_snps)," / gene=",gene_name," / Region=",region, "\n")
 
   write.table(coloc_probs, file=paste0("chr",chr,"_",gwas.data.name,"_",trait,"_",tissue,"_",gene_name,"_colocProbs.txt"),row.names=F,col.names=F,quote=F,sep="\t",append=T)
   rm(error,coloc_probs,coloc_data,x_eqtl,x_gwas)
