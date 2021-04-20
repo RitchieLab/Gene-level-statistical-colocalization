@@ -26,7 +26,7 @@ The following libraries are required to run this sofware:
 * We run *coloc* between GWAS and eQTL datasets (same parameters as before) at the locus using conditional probabilities obtained from COJO.
 
 ### Collect and compile
-* We select the lead SNP with the lowest P[H3] for a given eGene and use this as the corresponding P[H3] for the gene. 
+* We select the lead SNP with P[H3]<0.5 that has the highest P[H4] for a given eGene and use this as the corresponding P[H3] and P[H4] for the gene. 
 * We can subsequently filter out all genes whose P[H3]>0.5 for a given tissue (these could be LD contaminated; i.e. GWAS causal variant and eQTL are different but in LD). 
 
 ## Input files
